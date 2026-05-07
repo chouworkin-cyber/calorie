@@ -318,14 +318,14 @@ public class Managercontroller {
     private static void seedDefaultWorkouts() {
         Object[][] defaults = {
             {1, "Beginner", "Level 1", 50,
-             "เหมาะสำหรับผู้เริ่มต้น ออกกำลังกายเบาๆ",
-             List.of("เดินเร็ว 15 นาที", "Squat 10 ครั้ง", "ยืดเหยียด 5 นาที"), 25},
+             "basic exercises for those new to fitness",
+             List.of("walking 15 minutes", "Squat 10 times", "Stretching 5 minutes"), 25},
             {2, "Normal",   "Level 2", 80,
-             "ความเข้มข้นปานกลาง เหมาะสำหรับผู้ที่ออกกำลังกายบ้างแล้ว",
-             List.of("Jogging 20 นาที", "Push-up 15 ครั้ง", "Lunge 12 ครั้ง/ข้าง"), 35},
+             "moderate intensity, suitable for those who have some workout experience",
+             List.of("Jogging 20 minutes", "Push-up 15 times", "Lunge 12 times/side"), 35},
             {3, "Advanced", "Level 3", 120,
-             "ความเข้มข้นสูง สำหรับผู้ที่มีประสบการณ์",
-             List.of("Burpee 15 ครั้ง", "Mountain climber 30 วินาที x 3", "Plank 60 วินาที"), 45},
+             "high intensity, suitable for those with experience",
+             List.of("Burpee 15 times", "Mountain climber 30 seconds x 3", "Plank 60 seconds"), 45},
         };
         for (Object[] d : defaults) {
             int id = workoutIdSeq.getAndIncrement();
