@@ -355,14 +355,14 @@
 
     <div class="content">
         <!-- Breakfast Section -->
-        <div class="meal-section" th:classappend="${breakfast > 0 ? 'completed' : ''}">
+        <div class="meal-section" th:classappend="${breakfast != null && breakfast > 0 ? 'completed' : ''}">
             <div class="meal-header">
                 <span class="meal-title">Breakfast</span>
                 <span class="meal-kcal" th:text="${breakfast} + ' kcal'">0 kcal</span>
             </div>
 
             <!-- Preset Foods for Breakfast - Hidden when completed -->
-            <div class="preset-grid" th:if="${breakfast == 0}">
+            <div class="preset-grid" th:if="${breakfast == null || breakfast == 0}">
                 <div class="preset-card" th:each="preset : ${presetFoods}">
                     <span th:text="${preset.key}">ข้าวไข่เจียว</span>
                     <b th:text="${preset.value} + ' kcal'">350 kcal</b>
@@ -371,14 +371,14 @@
 
             <!-- Breakfast Items List -->
             <ol class="food-items-list">
-                <li class="food-item" th:each="item : ${breakfastItems}" th:text="${item}">ข้าวสวย</li>
-                <li class="empty-message" th:if="${#lists.isEmpty(breakfastItems)}">
+                <li class="food-item" th:each="item : ${breakfastItems}" th:if="${breakfastItems != null}" th:text="${item}">ข้าวสวย</li>
+                <li class="empty-message" th:if="${breakfastItems == null || #lists.isEmpty(breakfastItems)}">
                     No items added yet
                 </li>
             </ol>
 
             <!-- Add Food Form for Breakfast -->
-            <div th:if="${breakfast == 0}">
+            <div th:if="${breakfast == null || breakfast == 0}">
                 <div class="section-title">Add Food</div>
                 <form class="food-form" action="/food" method="post">
                     <input type="hidden" name="meal" value="breakfast">
@@ -414,14 +414,14 @@
         </div>
 
         <!-- Lunch Section -->
-        <div class="meal-section" th:classappend="${lunch > 0 ? 'completed' : ''}">
+        <div class="meal-section" th:classappend="${lunch != null && lunch > 0 ? 'completed' : ''}">
             <div class="meal-header">
                 <span class="meal-title">Lunch</span>
                 <span class="meal-kcal" th:text="${lunch} + ' kcal'">0 kcal</span>
             </div>
 
             <!-- Preset Foods for Lunch - Hidden when completed -->
-            <div class="preset-grid" th:if="${lunch == 0}">
+            <div class="preset-grid" th:if="${lunch == null || lunch == 0}">
                 <div class="preset-card" th:each="preset : ${presetFoods}">
                     <span th:text="${preset.key}">ข้าวไข่เจียว</span>
                     <b th:text="${preset.value} + ' kcal'">350 kcal</b>
@@ -430,14 +430,14 @@
 
             <!-- Lunch Items List -->
             <ol class="food-items-list">
-                <li class="food-item" th:each="item : ${lunchItems}" th:text="${item}">ยำหมูย่าง</li>
-                <li class="empty-message" th:if="${#lists.isEmpty(lunchItems)}">
+                <li class="food-item" th:each="item : ${lunchItems}" th:if="${lunchItems != null}" th:text="${item}">ยำหมูย่าง</li>
+                <li class="empty-message" th:if="${lunchItems == null || #lists.isEmpty(lunchItems)}">
                     No items added yet
                 </li>
             </ol>
 
             <!-- Add Food Form for Lunch -->
-            <div th:if="${lunch == 0}">
+            <div th:if="${lunch == null || lunch == 0}">
                 <div class="section-title">Add Food</div>
                 <form class="food-form" action="/food" method="post">
                     <input type="hidden" name="meal" value="lunch">
@@ -471,14 +471,14 @@
         </div>
 
         <!-- Dinner Section -->
-        <div class="meal-section" th:classappend="${dinner > 0 ? 'completed' : ''}">
+        <div class="meal-section" th:classappend="${dinner != null && dinner > 0 ? 'completed' : ''}">
             <div class="meal-header">
                 <span class="meal-title"> Dinner</span>
                 <span class="meal-kcal" th:text="${dinner} + ' kcal'">0 kcal</span>
             </div>
 
             <!-- Preset Foods for Dinner - Hidden when completed -->
-            <div class="preset-grid" th:if="${dinner == 0}">
+            <div class="preset-grid" th:if="${dinner == null || dinner == 0}">
                 <div class="preset-card" th:each="preset : ${presetFoods}">
                     <span th:text="${preset.key}">ข้าวไข่เจียว</span>
                     <b th:text="${preset.value} + ' kcal'">350 kcal</b>
@@ -487,14 +487,14 @@
 
             <!-- Dinner Items List -->
             <ol class="food-items-list">
-                <li class="food-item" th:each="item : ${dinnerItems}" th:text="${item}">แกงจืด</li>
-                <li class="empty-message" th:if="${#lists.isEmpty(dinnerItems)}">
+                <li class="food-item" th:each="item : ${dinnerItems}" th:if="${dinnerItems != null}" th:text="${item}">แกงจืด</li>
+                <li class="empty-message" th:if="${dinnerItems == null || #lists.isEmpty(dinnerItems)}">
                     No items added yet
                 </li>
             </ol>
 
             <!-- Add Food Form for Dinner -->
-            <div th:if="${dinner == 0}">
+            <div th:if="${dinner == null || dinner == 0}">
                 <div class="section-title">Add Food</div>
                 <form class="food-form" action="/food" method="post">
                     <input type="hidden" name="meal" value="dinner">
@@ -530,11 +530,11 @@
         <!-- Summary Stats at Bottom -->
         <div class="summary-stats">
             <div class="stat-box">
-                <b th:text="${totalEaten}">0</b>
+                <b th:text="${totalEaten != null ? totalEaten : 0}">0</b>
                 <span>Kcal today</span>
             </div>
             <div class="stat-box">
-                <b th:text="${#lists.size(breakfastItems) + #lists.size(lunchItems) + #lists.size(dinnerItems)}">0</b>
+                <b th:text="${(breakfastItems != null ? #lists.size(breakfastItems) : 0) + (lunchItems != null ? #lists.size(lunchItems) : 0) + (dinnerItems != null ? #lists.size(dinnerItems) : 0)}">0</b>
                 <span>Total items</span>
             </div>
         </div>

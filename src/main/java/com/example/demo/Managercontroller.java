@@ -77,7 +77,7 @@ public class Managercontroller {
         if (editId != null && foodDB.containsKey(editId)) {
             model.addAttribute("editFood", foodDB.get(editId));
         }
-        return "food"; 
+        return "manageFood"; 
     }
 
     @PostMapping("/food/add")
@@ -103,7 +103,7 @@ public class Managercontroller {
         if (foodDB.containsKey(id)) {
             model.addAttribute("editFood", foodDB.get(id));
         }
-        return "food";
+        return "manageFood";
     }
 
     @PostMapping("/food/update")
