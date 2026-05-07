@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>log in - CalTrack</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sut-orange: #b7764a;
+            --sut-dark: #5d5d5d;
+            --bg-gray: #f4f4f4;
+            --text-dark: #424242;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Kanit', sans-serif;
+            background: radial-gradient(circle, #f9f5f2 50%, #f7f1eb 100%); 
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .app-screen { 
+            width: 550px; 
+            height: 650px; 
+            background: white; 
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            border-radius: 20px; 
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header { 
+            background: var(--sut-dark); 
+            padding: 10px; 
+            text-align: center; 
+            flex-shrink: 0; 
+            color: white; 
+            font-weight: 600; 
+        }
+
+        .content { 
+            flex-grow: 1; 
+            overflow-y: auto; 
+            padding: 40px; 
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .logo-circle {
+            background: #fbf6f1; 
+            width: 80px; height: 80px; 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+            margin: 0 auto 20px;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+
+        h2 {
+            color: var(--text-dark);
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 1.8rem;
+        }
+
+        .tab-buttons {
+            display: flex;
+            background: var(--bg-gray);
+            padding: 6px;
+            border-radius: 15px;
+            margin: 20px 0 30px;
+            gap: 5px;
+        }
+
+        .tab-buttons button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-family: 'Kanit';
+            font-size: 1rem;
+            color: #9e9e9e;
+        }
+
+        .tab-buttons button.active {
+            background: white;
+            color: var(--sut-dark);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            font-weight: 600;
+        }
+
+        .mode-tabs {
+            text-align: right;
+            margin-bottom: 5px;
+            padding-right: 5px;
+        }
+
+        .mode-tabs button {
+            background: none;
+            border: none;
+            color: var(--sut-orange);
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-family: 'Kanit';
+            text-decoration: underline;
+        }
+
+        .mode-tabs button.active {
+            display: none;
+        }
+
+        input {
+            width: 100%;
+            padding: 16px;
+            margin: 10px 0;
+            border: 1px solid #e2d7c6;
+            border-radius: 14px;
+            box-sizing: border-box;
+            transition: 0.3s;
+            background: #fbf6f1;
+            font-family: 'Kanit';
+            font-size: 0.95rem;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--sut-orange);
+            box-shadow: 0 0 0 4px rgba(183, 118, 74, 0.1);
+        }
+
+        #submit-btn {
+            width: 100%;
+            padding: 16px;
+            background-color: var(--sut-dark);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: 0.3s;
+            font-family: 'Kanit';
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        #submit-btn:hover {
+            background-color: #424242;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-screen">
+    <div class="header">
+        <span style="font-weight: 800; font-size: 1.6rem; color: white; letter-spacing: 1px;">SUT</span>
+    </div>
+
+    <div class="content">
+        <div class="logo-circle">
+            <span style="font-weight: 800; font-size: 1.5rem; color: var(--sut-orange);">calorie counter</span>
+        </div>
+
+        <div class="tab-buttons">
+            <button onclick="uiController.switchRole('user')" id="btn-user" class="active">User</button>
+            <button onclick="uiController.switchRole('manager')" id="btn-manager">Manager</button>
+        </div>
+
+        <div class="mode-tabs" id="user-modes">
+            <button onclick="uiController.switchMode('login')" id="btn-login" class="active">log in</button>
+            <button onclick="uiController.switchMode('signup')" id="btn-signup">sign in</button>
+        </div>
+
+        <form id="loginForm">
+            <input type="text" id="username" placeholder="Username" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button type="submit" id="submit-btn">Log in</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    class BaseAccount {
+        constructor(username, password) {
+            this.username = username;
+            this.password = password;
+        }
+        authenticate() {
+            return this.username.length > 0 && this.password.length > 0;
+        }
+    }
+
+    class UserAccount extends BaseAccount {
+        constructor(username, password, mode) {
+            super(username, password);
+            this.mode = mode;
+        }
+        getRedirectPath() { 
+            if (this.mode === 'signup') {
+                return "/calculate"; 
+            }
+            const hasSetup = localStorage.getItem('user_setup_' + this.username);
+            return hasSetup ? "/home" : "/calculate"; 
+        }
+    }
+
+    class ManagerAccount extends BaseAccount {
+        constructor(username, password) {
+            super(username, password);
+            this.adminId = "admin1";
+            this.adminPass = "0630";
+        }
+        authenticate() {
+            return this.username === this.adminId && this.password === this.adminPass;
+        }
+        getRedirectPath() { return "/manager/home"; }
+    }
+
+    const uiController = {
+        currentRole: 'user',
+        currentMode: 'login',
+        
+        switchRole(role) {
+            this.currentRole = role;
+            
+            document.getElementById('btn-user').classList.toggle('active', role === 'user');
+            document.getElementById('btn-manager').classList.toggle('active', role === 'manager');
+            
+            document.getElementById('user-modes').style.display = role === 'user' ? 'block' : 'none';
+            
+            document.getElementById('loginForm').reset();
+        },
+
+        switchMode(mode) {
+            this.currentMode = mode;
+            document.getElementById('btn-login').classList.toggle('active', mode === 'login');
+            document.getElementById('btn-signup').classList.toggle('active', mode === 'signup');
+            if(document.getElementById('btn-login')) document.getElementById('btn-login').classList.toggle('active', mode === 'login');
+            if(document.getElementById('btn-signup')) document.getElementById('btn-signup').classList.toggle('active', mode === 'signup');
+            
+            const submitBtn = document.getElementById('submit-btn'); // Ensure submitBtn is defined
+            submitBtn.innerText = mode === 'login' ? 'log in' : 'sign in';
+        },
+
+        handleLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            
+            const account = (this.currentRole === 'user') 
+                ? new UserAccount(u, p, this.currentMode) 
+                : new ManagerAccount(u, p);
+
+            if (account.authenticate()) {
+                const formData = new URLSearchParams();
+                formData.append('username', u);
+
+                fetch('/login', {
+                    method: 'POST',
+                    body: formData
+                }).then(() => {
+                    alert("ยินดีต้อนรับคุณ " + account.username + " เข้าสู่ระบบ!");
+                    window.location.href = account.getRedirectPath();
+                });
+            } else {
+                alert("Invalid " + this.currentRole + " credentials.");
+            }
+        }
+    };
+
+    document.getElementById('loginForm').addEventListener('submit', (e) => uiController.handleLogin(e));
+</script>
+
+</body>
+</html>

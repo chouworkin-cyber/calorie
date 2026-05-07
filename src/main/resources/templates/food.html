@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Food Tracking</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sut-orange: #b7764a;
+            --sut-dark: #5d5d5d;
+            --bg-gray: #f4f4f4;
+            --status-completed: #ffffff; ;
+            --status-pending: #b7764a;
+        }
+
+        body {
+            font-family: 'Kanit', sans-serif;
+            background: radial-gradient(circle, #f9f5f2 50%, #f7f1eb 100%);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .app-screen {
+            width: 550px;
+            height: 650px;
+            background: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            display: flex;
+            border-radius: 20px;
+            flex-direction: column;
+        }
+
+        .header {
+            background: var(--sut-dark);
+            padding: 10px;
+            text-align: center;
+            flex-shrink: 0;
+            color: white;
+            font-weight: 600;
+        }
+
+        .content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px;
+            padding-bottom: 90px;
+        }
+
+        .meal-section {
+            background: white;
+            border: 2px solid #ffffff;
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 14px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.250);
+        }
+
+        .meal-section.completed {
+            background: var(--status-completed);
+            color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.250);
+            border-color: var(--status-completed);
+        }
+
+        .meal-section.completed .meal-header,
+        .meal-section.completed .section-title {
+            color: white;
+        }
+
+        .meal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            
+        }
+
+        .meal-section.completed .meal-header {
+            border-bottom-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .meal-title {
+            font-size: 1rem;
+            font-weight: bold;
+            color: var(--sut-dark);
+        }
+
+        .meal-section.completed .meal-title {
+            color:#4f4f4f(196, 37, 37);
+        }
+
+        .meal-kcal {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #4f4f4f;
+            background: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            min-width: 70px;
+            text-align: center;
+        }
+
+        .meal-section.completed .meal-kcal {
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--sut-dark);
+        }
+
+    
+        .preset-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .meal-section.completed .preset-grid {
+            display: none;
+        }
+
+        .preset-card {
+            background: #f7f1eb;
+            border-radius: 8px;
+            padding: 8px;
+            color: #4f4f4f;
+            font-size: 0.8rem;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid #e8ddd3;
+        }
+
+        .preset-card:hover {
+            background: #e6dcd3;
+            border-color: var(--sut-orange);
+        }
+
+        .preset-card b {
+            color: var(--sut-orange);
+            display: block;
+            margin-top: 3px;
+            font-size: 0.75rem;
+        }
+
+        .section-title {
+            color: var(--sut-orange);
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+
+        .food-form {
+            display: grid;
+            gap: 10px;
+        }
+
+        .food-form label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #5d5d5d;
+            margin-bottom: 4px;
+        }
+
+        .meal-section.completed .food-form label {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .food-form input,
+        .food-form select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e2d7c6;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background: #fbf6f1;
+            color: #4f4f4f;
+            box-sizing: border-box;
+        }
+
+        .meal-section.completed .food-form input,
+        .meal-section.completed .food-form select {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+
+        .meal-section.completed .food-form input::placeholder,
+        .meal-section.completed .food-form select::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 8px;
+        }
+
+        .food-form button {
+            background: var(--sut-orange);
+            color: #f7f1eb;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: 0.3s ease;
+        }
+
+        .food-form button:hover:not(:disabled) {
+            background: #692e04;
+            transform: translateY(-2px);
+        }
+
+        .meal-section.completed .food-form button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .food-items-list {
+            margin: 0 0 12px 18px;
+            padding: 0;
+            color: #4f4f4f;
+            font-size: 0.85rem;
+        }
+
+        .food-item {
+            margin-bottom: 6px;
+        }
+
+        .meal-section.completed .food-item {
+            background: transparent;
+            color: #4f4f4f;
+            padding: 0;
+            text-align: left;
+            box-shadow: none;
+        }
+
+        .food-item-name {
+            flex: 1;
+        }
+
+        .food-item-kcal {
+            font-weight: bold;
+            color: var(--sut-orange);
+            margin-left: 8px;
+        }
+
+        .meal-section.completed .food-item-kcal {
+            color: rgb(202, 39, 39);
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 8px;
+            color: #a0653b;
+            font-size: 0.8rem;
+            list-style-type: none;
+            margin-left: -18px;
+        }
+
+        .meal-section.completed .empty-message {
+            color: #a0653b;
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid #e8ddd3;
+        }
+
+        .stat-box {
+            background: white;
+            border: 1px solid #ffffff;
+            padding: 8px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.250);
+        }
+
+        .stat-box b {
+            font-size: 1.1rem;
+            display: block;
+            color: var(--sut-dark);
+        }
+
+        .stat-box span {
+            font-size: 0.75rem;
+            color: #888;
+        }
+
+        .footer-link {
+            display: inline-block;
+            color: var(--sut-orange);
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+        .preset-grid {
+    display: none;
+
+        }
+        .add-button {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    background-color: var(--sut-orange);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 30px;
+    text-decoration: none;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    border: none;
+    cursor: pointer;
+    z-index: 100;
+    transition: 0.3s;
+}
+
+.add-button:hover {
+    transform: scale(1.1);
+    background-color: #692e04;
+}
+    </style>
+</head>
+<body>
+
+<div class="app-screen">
+    <div class="header">
+        <span style="font-weight: 800; font-size: 1.6rem; color: white; letter-spacing: 1px;">SUT</span>
+    </div>
+
+    <h3><center style="color: #b7764a;">Food Tracking</center></h3>
+
+    <div class="content">
+        <!-- Breakfast Section -->
+        <div class="meal-section" th:classappend="${breakfast > 0 ? 'completed' : ''}">
+            <div class="meal-header">
+                <span class="meal-title">Breakfast</span>
+                <span class="meal-kcal" th:text="${breakfast} + ' kcal'">0 kcal</span>
+            </div>
+
+            <!-- Preset Foods for Breakfast - Hidden when completed -->
+            <div class="preset-grid" th:if="${breakfast == 0}">
+                <div class="preset-card" th:each="preset : ${presetFoods}">
+                    <span th:text="${preset.key}">ข้าวไข่เจียว</span>
+                    <b th:text="${preset.value} + ' kcal'">350 kcal</b>
+                </div>
+            </div>
+
+            <!-- Breakfast Items List -->
+            <ol class="food-items-list">
+                <li class="food-item" th:each="item : ${breakfastItems}" th:text="${item}">ข้าวสวย</li>
+                <li class="empty-message" th:if="${#lists.isEmpty(breakfastItems)}">
+                    No items added yet
+                </li>
+            </ol>
+
+            <!-- Add Food Form for Breakfast -->
+            <div th:if="${breakfast == 0}">
+                <div class="section-title">Add Food</div>
+                <form class="food-form" action="/food" method="post">
+                    <input type="hidden" name="meal" value="breakfast">
+                    
+                    
+                    <div>
+                        <label for="presetFood-breakfast">Select Preset</label>
+                        <select id="presetFood-breakfast" name="presetFood">
+                            <option value="">Choose a preset food</option>
+                            <option th:each="preset : ${presetFoods}"
+                                    th:value="${preset.key} + '|' + ${preset.value}"
+                                    th:text="${preset.key} + ' (' + ${preset.value} + ' kcal)'">
+                                ข้าวไข่เจียว (350 kcal)
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div>
+                            <label for="foodName-breakfast">Food Name</label>
+                            <input type="text" id="foodName-breakfast" name="foodName" placeholder="e.g. ข้าวไข่เจียว">
+                        </div>
+                        <div>
+                            <label for="kcal-breakfast">Calories</label>
+                            <input type="number" id="kcal-breakfast" name="kcal" min="0" placeholder="kcal">
+                        </div>
+                    </div>
+
+                    <button type="submit">Add Food</button>
+                    
+                </form>
+            </div>
+        </div>
+
+        <!-- Lunch Section -->
+        <div class="meal-section" th:classappend="${lunch > 0 ? 'completed' : ''}">
+            <div class="meal-header">
+                <span class="meal-title">Lunch</span>
+                <span class="meal-kcal" th:text="${lunch} + ' kcal'">0 kcal</span>
+            </div>
+
+            <!-- Preset Foods for Lunch - Hidden when completed -->
+            <div class="preset-grid" th:if="${lunch == 0}">
+                <div class="preset-card" th:each="preset : ${presetFoods}">
+                    <span th:text="${preset.key}">ข้าวไข่เจียว</span>
+                    <b th:text="${preset.value} + ' kcal'">350 kcal</b>
+                </div>
+            </div>
+
+            <!-- Lunch Items List -->
+            <ol class="food-items-list">
+                <li class="food-item" th:each="item : ${lunchItems}" th:text="${item}">ยำหมูย่าง</li>
+                <li class="empty-message" th:if="${#lists.isEmpty(lunchItems)}">
+                    No items added yet
+                </li>
+            </ol>
+
+            <!-- Add Food Form for Lunch -->
+            <div th:if="${lunch == 0}">
+                <div class="section-title">Add Food</div>
+                <form class="food-form" action="/food" method="post">
+                    <input type="hidden" name="meal" value="lunch">
+                    
+                    <div>
+                        <label for="presetFood-lunch">Select Preset</label>
+                        <select id="presetFood-lunch" name="presetFood">
+                            <option value="">Choose a preset food</option>
+                            <option th:each="preset : ${presetFoods}"
+                                    th:value="${preset.key} + '|' + ${preset.value}"
+                                    th:text="${preset.key} + ' (' + ${preset.value} + ' kcal)'">
+                                ข้าวไข่เจียว (350 kcal)
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div>
+                            <label for="foodName-lunch">Food Name</label>
+                            <input type="text" id="foodName-lunch" name="foodName" placeholder="e.g. ยำหมูย่าง">
+                        </div>
+                        <div>
+                            <label for="kcal-lunch">Calories</label>
+                            <input type="number" id="kcal-lunch" name="kcal" min="0" placeholder="kcal">
+                        </div>
+                    </div>
+
+                    <button type="submit">Add Food</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Dinner Section -->
+        <div class="meal-section" th:classappend="${dinner > 0 ? 'completed' : ''}">
+            <div class="meal-header">
+                <span class="meal-title"> Dinner</span>
+                <span class="meal-kcal" th:text="${dinner} + ' kcal'">0 kcal</span>
+            </div>
+
+            <!-- Preset Foods for Dinner - Hidden when completed -->
+            <div class="preset-grid" th:if="${dinner == 0}">
+                <div class="preset-card" th:each="preset : ${presetFoods}">
+                    <span th:text="${preset.key}">ข้าวไข่เจียว</span>
+                    <b th:text="${preset.value} + ' kcal'">350 kcal</b>
+                </div>
+            </div>
+
+            <!-- Dinner Items List -->
+            <ol class="food-items-list">
+                <li class="food-item" th:each="item : ${dinnerItems}" th:text="${item}">แกงจืด</li>
+                <li class="empty-message" th:if="${#lists.isEmpty(dinnerItems)}">
+                    No items added yet
+                </li>
+            </ol>
+
+            <!-- Add Food Form for Dinner -->
+            <div th:if="${dinner == 0}">
+                <div class="section-title">Add Food</div>
+                <form class="food-form" action="/food" method="post">
+                    <input type="hidden" name="meal" value="dinner">
+                    
+                    <div>
+                        <label for="presetFood-dinner">Select Preset</label>
+                        <select id="presetFood-dinner" name="presetFood">
+                            <option value="">Choose a preset food</option>
+                            <option th:each="preset : ${presetFoods}"
+                                    th:value="${preset.key} + '|' + ${preset.value}"
+                                    th:text="${preset.key} + ' (' + ${preset.value} + ' kcal)'">
+                                ข้าวไข่เจียว (350 kcal)
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div>
+                            <label for="foodName-dinner">Food Name</label>
+                            <input type="text" id="foodName-dinner" name="foodName" placeholder="e.g. แกงจืด">
+                        </div>
+                        <div>
+                            <label for="kcal-dinner">Calories</label>
+                            <input type="number" id="kcal-dinner" name="kcal" min="0" placeholder="kcal">
+                        </div>
+                    </div>
+
+                    <button type="submit">Add Food</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Summary Stats at Bottom -->
+        <div class="summary-stats">
+            <div class="stat-box">
+                <b th:text="${totalEaten}">0</b>
+                <span>Kcal today</span>
+            </div>
+            <div class="stat-box">
+                <b th:text="${#lists.size(breakfastItems) + #lists.size(lunchItems) + #lists.size(dinnerItems)}">0</b>
+                <span>Total items</span>
+            </div>
+        </div>
+
+        <a href="/home" class="footer-link">Back</a>
+    </div>
+</div>
+
+</body>
+</html>

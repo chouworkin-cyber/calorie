@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Health Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sut-orange: #b7764a;
+            --sut-dark: #5d5d5d;
+            --bg-gray: #f4f4f4;
+        }
+
+        body { 
+            font-family: 'Kanit', sans-serif; 
+            background: radial-gradient(circle, #f9f5f2 50%, #f7f1eb 100%); 
+            margin: 0; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .app-screen { 
+            width: 550px; 
+            height: 650px;
+            background: white; 
+            position: relative; 
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            border-radius: 20px; 
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header { 
+            background: var(--sut-dark); 
+            padding: 10px; 
+            text-align: center; 
+            flex-shrink: 0; 
+            color: white; 
+            font-weight: 600; 
+        }
+
+        .content { 
+            flex-grow: 1; 
+            overflow-y: auto; 
+            padding: 20px; 
+            padding-bottom: 90px; /* Space for footer link */
+        }
+
+        h3 { 
+            color: var(--sut-orange); 
+            text-align: center; 
+            margin: 15px 0; 
+        }
+        
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-weight: 600; margin-bottom: 8px; color: #5d5d5d; font-size: 0.9rem; }
+        
+        input, select { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid #e2d7c6; 
+            border-radius: 10px; 
+            box-sizing: border-box; 
+            font-size: 0.95rem; 
+            background-color: #fbf6f1;
+            color: #4f4f4f;
+        }
+
+        .btn-calculate { 
+            width: 100%; 
+            padding: 12px; 
+            background: var(--sut-orange); 
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer; 
+            transition: 0.3s; 
+            margin-top: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.250);
+        }
+        .btn-calculate:hover { background: #a36640; transform: translateY(-2px); }
+
+        .result-section { 
+            margin-top: 20px; 
+            padding: 14px; 
+            border-radius: 14px; 
+            background: #ffffff; 
+            border: 1px solid #ffffff; 
+            animation: fadeIn 0.5s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.250);
+        }
+        
+        .result-section h3 { text-align: center; color: var(--sut-dark); margin-top: 0; font-size: 1.1rem; }
+        
+        .res-item { display: flex; justify-content: space-between; margin-bottom: 10px; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
+        
+        .res-label { color: var(--sut-dark); font-weight: 500; font-size: 0.9rem; }
+        .val { font-weight: bold; color: var(--sut-orange); font-size: 1rem; }
+
+        .footer-link {
+            display: inline-block;
+            color: var(--sut-orange);
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+
+        .btn-submit-setup {
+            padding: 12px 25px;
+            background-color: var(--sut-dark);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: block; /* Make it a block element to take full width */
+            max-width: 200px; /* Limit width */
+            text-align: center;
+            margin: 20px auto 0 auto; /* Center horizontally */
+        }
+
+        .btn-submit-setup:hover { background-color: #424242; transform: translateY(-2px); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="app-screen">
+    <div class="header">
+        <span style="font-weight: 800; font-size: 1.6rem; color: white; letter-spacing: 1px;">SUT</span>
+    </div>
+
+    <h3>Calorie Tracker</h3>
+    
+    <div class="content">
+    <form action="/calculate" method="post">
+        <div class="form-group">
+            <label>Weight (kg):</label>
+            <input type="number" name="weight" step="0.1" th:value="${weight}" placeholder="Enter weight" required>
+        </div>
+        <div class="form-group">
+            <label>Height (cm):</label>
+            <input type="number" name="height" step="0.1" th:value="${height}" placeholder="Enter height" required>
+        </div>
+        <div class="form-group">
+            <label>Age (years):</label>
+            <input type="number" name="age" th:value="${age}" placeholder="Enter age" required>
+        </div>
+        <div class="form-group">
+            <label>Gender:</label>
+            <select name="gender">
+                <option value="male" th:selected="${gender == 'male'}">male</option>
+                <option value="female" th:selected="${gender == 'female'}">female</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Activity Level:</label>
+            <select name="activity">
+                <option value="1.2" th:selected="${activity == 1.2}">Non Active</option>
+                <option value="1.375" th:selected="${activity == 1.375}">Lightly Active</option>
+                <option value="1.55" th:selected="${activity == 1.55}">Moderately Active</option>
+                <option value="1.725" th:selected="${activity == 1.725}">Very Active</option>
+            </select>
+        </div>
+        <button type="submit" class="btn-calculate">Calculate</button>
+    </form>
+
+    <div class="result-section" th:if="${calories != null}">
+        <h3>Your result</h3>
+        
+        <div class="res-item">
+            <span class="res-label">Total kcal:</span>
+            <span class="val" th:text="${#numbers.formatDecimal(calories, 1, 0)}">1634</span>
+        </div>
+
+        <a href="javascript:void(0)" onclick="completeSetup()" class="btn-submit-setup">Submit</a>
+    </div>
+</div>
+    </div>
+
+<script th:inline="javascript">
+    function completeSetup() {
+        const username = /*[[${session.username}]]*/ 'guest';
+        localStorage.setItem('user_setup_' + username, 'true');
+        
+        window.location.href = "/home";
+    }
+</script>
+
+</body>
+</html>

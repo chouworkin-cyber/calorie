@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Workout Plan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sut-orange: #b7764a;
+            --sut-dark: #5d5d5d;
+            --bg-gray: #f4f4f4;
+        }
+
+        body {
+            font-family: 'Kanit', sans-serif;
+            background: radial-gradient(circle, #f9f5f2 50%, #f7f1eb 100%);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .app-screen {
+            width: 550px;
+            height: 650px;
+            background: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            display: flex;
+            border-radius: 20px;
+            flex-direction: column;
+        }
+
+        .header {
+            background: var(--sut-dark);
+            padding: 10px;
+            text-align: center;
+            flex-shrink: 0;
+            color: white;
+            font-weight: 600;
+        }
+
+        .content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px;
+            padding-bottom: 90px;
+        }
+
+        .toolbar,.toolbar2 {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .toolbar input,
+        .toolbar select {
+            width: 100%;
+            padding: 12px;
+            width: 460px;
+            border: 1px solid #ffffff;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            background: #ffffff;
+            color: #4f4f4f;
+            box-sizing: border-box;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.250);
+    ;
+        }
+        .toolbar2 select{
+            display: grid;
+            gap: 0px;
+            margin-bottom: 0px;
+            border: 1px solid #ffffff;
+            border-radius: 0px;
+            padding: 0px;
+            font-size: 0.95rem;
+            background: #ffffff;
+            color: #ffffff;
+            box-sizing: border-box;
+        }
+
+        .point-btn {
+            background: var(--sut-orange);
+            color: #f7f1eb;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            width: 100%;
+            font-weight: bold;
+            margin-bottom: 15px;
+            cursor: default;
+        }
+
+        .section-card {
+            background: white;
+            border: 1px solid #ffffff;
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 14px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.250);
+        }
+
+        .section-title {
+            color: var(--sut-orange);
+            font-weight: bold;
+            margin-bottom: 10px;
+            border-bottom: #ffffff;
+            padding-bottom: 4px;
+            font-size: 0.9rem;
+        }
+
+        .workout-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .level-badge {
+            display: inline-block;
+            color: #b7764a;
+            border-radius: 999px;
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .level-points {
+            color: var(--sut-orange);
+            font-size: 0.95rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .plan-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--sut-dark);
+        }
+
+        .plan-desc {
+            color: #6b6b6b;
+            font-size: 0.85rem;
+            margin: 8px 0 10px;
+        }
+
+        .exercise-list {
+            margin: 0 0 12px 18px;
+            padding: 0;
+            color: #4f4f4f;
+            font-size: 0.85rem;
+        }
+
+        .exercise-list li {
+            margin-bottom: 6px;
+        }
+
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .status-text {
+            font-size: 0.82rem;
+            color: #777;
+        }
+
+        .claim-btn {
+            background: var(--sut-orange);
+            color: #f7f1eb;
+            padding: 10px 14px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .done-badge {
+            background: #dff2df;
+            color: #2d7a39;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+        .footer-link {
+            display: inline-block;
+            color: var(--sut-orange);
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-screen">
+    <div class="header">
+        <span style="font-weight: 800; font-size: 1.6rem; color: white; letter-spacing: 1px;">SUT</span>
+    </div>
+
+<h3><center style="color: #b7764a;">Workout Plans</center></h3>
+
+    <div class="content">
+        <div class="toolbar">
+            <input class="center" type="text" id="planSearch" placeholder="Search workout plans..."> 
+            </select>
+        </div>
+        
+        <div class="toolbar2">
+            <select style="color: #ffffff ;background-origin: padding-box; padding-bottom: 0%;" class id="difficultyFilter">
+                <option value="all">All</option>
+                <option value="level 1">Level 1</option>
+                <option value="level 2">Level 2</option>
+                <option value="level 3">Level 3</option>
+            </select>
+        </div>
+        
+
+        <div class="section-card workout-card"
+            th:each="plan : ${workoutPlans}"
+            th:attr="data-level=${#strings.toLowerCase(plan.level)},data-search=${#strings.toLowerCase(plan.title + ' ' + plan.description + ' ' + #strings.listJoin(plan.exercises, ' '))}">
+            <div class="section-title">Workout Plan</div>
+
+            <div class="workout-top">
+                <div>
+                    <div class="level-badge" th:text="${plan.level}">Level 1</div>
+                    <div class="plan-title" th:text="${plan.title}">Starter Move</div>
+                </div>
+                <div class="level-points" th:text="'+' + ${plan.points} + ' pts'">+50 pts</div>
+            </div>
+
+            <div class="plan-desc" th:text="${plan.description}">Plan description</div>
+
+            <ol class="exercise-list">
+                <li th:each="exercise : ${plan.exercises}" th:text="${exercise}">Walk fast for 15 minutes</li>
+            </ol>
+
+            <div class="status-row">
+                <div class="status-text" th:text="${plan.completed} ? 'Claimed'">Status</div>
+
+                <div class="done-badge" th:if="${plan.completed}">Claimed</div>
+
+                <form th:if="${!plan.completed}" action="/workout/claim" method="post">
+                    <input type="hidden" name="level" th:value="${plan.key}" />
+                    <button type="submit" class="claim-btn">Claim</button>
+                </form>
+            </div>
+        </div>
+        
+
+        <a href="/home" class="footer-link"> Back </a>
+    </div>
+</div>
+
+<script>
+    const searchInput = document.getElementById('planSearch');
+    const difficultyFilter = document.getElementById('difficultyFilter');
+    const workoutCards = document.querySelectorAll('.workout-card');
+
+    function filterWorkoutPlans() {
+        const searchValue = searchInput.value.toLowerCase().trim();
+        const difficultyValue = difficultyFilter.value;
+
+        workoutCards.forEach((card) => {
+            const level = card.dataset.level || '';
+            const searchText = card.dataset.search || '';
+
+            const matchesSearch = searchText.includes(searchValue);
+            const matchesDifficulty = difficultyValue === 'all' || level === difficultyValue;
+
+            card.style.display = matchesSearch && matchesDifficulty ? 'block' : 'none';
+        });
+    }
+
+    searchInput.addEventListener('input', filterWorkoutPlans);
+    difficultyFilter.addEventListener('change', filterWorkoutPlans);
+</script>
+</body>
+</html>

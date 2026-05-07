@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Workouts</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Kanit:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root { --orange: #b7764a; --orange-light: #d4956e; --cream: #f7f1eb; --success: #4caf7d; --danger: #e05c5c; --info: #5c8fe0; --text-dark: #424242; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body { font-family: 'Kanit', 'DM Sans', sans-serif; background: radial-gradient(circle, #f9f5f2 50%, #f7f1eb 100%); min-height: 100vh; display: flex; color: var(--text-dark); }
+
+        .sidebar { width: 240px; background: #ffffff; min-height: 100vh; display: flex; flex-direction: column; border-right: 1px solid rgba(0,0,0,0.05); flex-shrink: 0; }
+        .sidebar-brand { padding: 28px 24px 20px; border-bottom: 1px solid rgba(0,0,0,0.05); text-align: center; }
+        .sidebar-brand .brand-title { font-weight: 700; font-size: 1.3rem; color: var(--orange); }
+        .sidebar-brand .brand-sub { font-size: 0.72rem; color: #666; margin-top: 3px; letter-spacing: 1.5px; text-transform: uppercase; }
+        .sidebar-nav { flex: 1; padding: 20px 0; }
+        .nav-section { padding: 8px 16px 4px; font-size: 0.65rem; color: #999; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 24px; color: #888; text-decoration: none; font-size: 0.9rem; border-left: 3px solid transparent; transition: all 0.2s; }
+        .nav-item:hover, .nav-item.active { color: var(--orange); background: rgba(183,118,74,0.05); border-left-color: var(--orange); }
+        .nav-item .icon { font-size: 1rem; width: 20px; text-align: center; }
+        .sidebar-footer { padding: 20px 24px; border-top: 1px solid rgba(0,0,0,0.05); }
+        .admin-badge { display: flex; align-items: center; gap: 10px; }
+        .admin-avatar { width: 36px; height: 36px; background: var(--orange); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: white; font-weight: bold; }
+        .admin-info .name { font-size: 0.85rem; color: var(--text-dark); font-weight: 500; }
+        .admin-info .role { font-size: 0.7rem; color: #555; }
+        .sidebar-logo { width: 60px; height: auto; margin-bottom: 10px; }
+
+        .main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        .topbar { background: rgba(255, 255, 255, 0.5); padding: 18px 32px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,0.05); flex-shrink: 0; backdrop-filter: blur(10px); }
+        .topbar-title { font-weight: 600; font-size: 1.4rem; color: var(--text-dark); }
+        .btn-logout { background: transparent; border: 1px solid rgba(0,0,0,0.1); color: #666; padding: 7px 16px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; text-decoration: none; transition: all 0.2s; }
+        .btn-logout:hover { border-color: var(--danger); color: var(--danger); }
+        .content { padding: 32px; flex: 1; }
+
+        .page-grid { display: grid; grid-template-columns: 420px 1fr; gap: 24px; align-items: start; }
+
+        .card { background: #ffffff; border: 1px solid rgba(0,0,0,0.05); border-radius: 14px; overflow: hidden; box-shadow: 0 4px 15px rgba(139, 69, 19, 0.05); }
+        .card-header { padding: 18px 22px; border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; }
+        .card-title { font-size: 0.95rem; font-weight: 600; color: var(--text-dark); }
+        .card-body { padding: 22px; }
+
+        .form-group { margin-bottom: 18px; }
+        .form-label { display: block; font-size: 0.8rem; color: #888; font-weight: 500; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-input, .form-select, .form-textarea {
+            width: 100%; padding: 12px 16px;
+            background: #fcfaf8; border: 1px solid #eee; border-radius: 10px;
+            color: var(--text-dark); font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+            transition: border-color 0.2s;
+        }
+        .form-textarea { resize: vertical; min-height: 80px; }
+        .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--orange); }
+        .form-select option { background: #ffffff; }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+        .hint { font-size: 0.75rem; color: #555; margin-top: 5px; }
+
+        .btn-primary { width: 100%; padding: 14px; background: var(--orange); color: white; border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+        .btn-primary:hover { background: var(--orange-light); transform: translateY(-1px); }
+
+      
+        .workout-list { display: flex; flex-direction: column; gap: 14px; }
+
+        .workout-card {
+            background: #fcfaf8;
+            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 12px;
+            padding: 18px 20px;
+            transition: border-color 0.2s;
+        }
+
+        .workout-card:hover { border-color: var(--orange-light); }
+
+        .wcard-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+
+        .wcard-title { font-size: 1rem; font-weight: 600; color: var(--text-dark); }
+        .wcard-level { font-size: 0.72rem; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+
+        .level-1 { background: rgba(76,175,125,0.15); color: var(--success); }
+        .level-2 { background: rgba(183,118,74,0.15); color: var(--orange); }
+        .level-3 { background: rgba(224,92,92,0.15); color: var(--danger); }
+
+        .wcard-desc { font-size: 0.85rem; color: #666; margin-bottom: 10px; }
+
+        .wcard-exercises { margin: 0 0 12px 16px; padding: 0; color: #777; font-size: 0.82rem; }
+        .wcard-exercises li { margin-bottom: 4px; }
+
+        .wcard-footer { display: flex; justify-content: space-between; align-items: center; }
+        .wcard-points { font-size: 0.9rem; font-weight: 700; color: var(--orange); }
+
+        .action-btns { display: flex; gap: 8px; }
+
+        .btn-edit { padding: 5px 12px; background: rgba(183,118,74,0.15); color: var(--orange); border: 1px solid rgba(183,118,74,0.3); border-radius: 6px; cursor: pointer; font-size: 0.78rem; font-family: 'DM Sans', sans-serif; text-decoration: none; transition: all 0.2s; }
+        .btn-edit:hover { background: rgba(183,118,74,0.3); }
+        .btn-delete { padding: 5px 12px; background: rgba(224,92,92,0.1); color: var(--danger); border: 1px solid rgba(224,92,92,0.2); border-radius: 6px; cursor: pointer; font-size: 0.78rem; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+        .btn-delete:hover { background: rgba(224,92,92,0.2); }
+
+        .empty-state { text-align: center; padding: 40px; color: #444; }
+        .empty-icon { font-size: 2.5rem; margin-bottom: 10px; }
+
+        .alert { padding: 12px 18px; border-radius: 10px; margin-bottom: 20px; font-size: 0.88rem; }
+        .alert-success { background: rgba(76,175,125,0.15); color: var(--success); border: 1px solid rgba(76,175,125,0.3); }
+        .alert-error { background: rgba(224,92,92,0.15); color: var(--danger); border: 1px solid rgba(224,92,92,0.3); }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="sidebar-brand">
+        <div style="background: #fcfaf8; width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; ">
+            <span style="font-weight: 800; font-size: 2.5rem; color: #b7764a;">SUT</span>
+        </div>
+        <div class="brand-sub">Manager Console</div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section">Overview</div>
+        <a href="/manager/home" class="nav-item"><span class="icon"></span> Dashboard</a>
+        <div class="nav-section">Manage</div>
+        <a href="/manager/food" class="nav-item"><span class="icon"></span> Food Menu</a>
+        <a href="/manager/workout" class="nav-item active"><span class="icon"></span> Workout Plans</a>
+        <a href="/manager/users" class="nav-item"><span class="icon"></span> Users</a>
+    </nav>
+    <div class="sidebar-footer">
+        <div class="admin-badge">
+            
+        </div>
+    </div>
+</div>
+
+<div class="main">
+    <div class="topbar">
+        <div class="topbar-title">Workout Plan Manager</div>
+        <div style="font-size: 0.85rem; color: #555;">System Status: <span style="color: var(--success);">Online</span></div>
+    </div>
+
+    <div class="content">
+
+        <div th:if="${successMsg}" class="alert alert-success" th:text="${successMsg}"></div>
+        <div th:if="${errorMsg}" class="alert alert-error" th:text="${errorMsg}"></div>
+
+        <div class="page-grid">
+
+            <!-- Add Workout Form -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title" th:text="${editPlan != null ? 'Edit Workout Plan' : 'Add New Plan'}">Add New Plan</span>
+                </div>
+                <div class="card-body">
+                    <form th:action="${editPlan != null ? '/manager/workout/update' : '/manager/workout/add'}" method="post">
+
+                        <input type="hidden" name="id" th:value="${editPlan != null ? editPlan.id : ''}" />
+
+                        <div class="form-group">
+                            <label class="form-label">Plan Title</label>
+                            <input type="text" name="title" class="form-input"
+                                   th:value="${editPlan != null ? editPlan.title : ''}"
+                                   placeholder="e.g. Beginner Cardio" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <textarea name="description" class="form-textarea"
+                                      placeholder="Short description of this plan..."
+                                      th:text="${editPlan != null ? editPlan.description : ''}"></textarea>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Difficulty Level</label>
+                                <select name="level" class="form-select">
+                                    <option value="Level 1" th:selected="${editPlan != null && editPlan.level == 'Level 1'}">Level 1 – Beginner</option>
+                                    <option value="Level 2" th:selected="${editPlan != null && editPlan.level == 'Level 2'}">Level 2 – Normal</option>
+                                    <option value="Level 3" th:selected="${editPlan != null && editPlan.level == 'Level 3'}">Level 3 – Advanced</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Points Reward</label>
+                                <input type="number" name="points" class="form-input"
+                                       th:value="${editPlan != null ? editPlan.points : ''}"
+                                       placeholder="e.g. 80" min="1" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Exercises (one per line)</label>
+                            <textarea name="exercisesRaw" class="form-textarea" style="min-height:100px;"
+                                      placeholder="เดินเร็ว 15 นาที&#10;Squat 10 ครั้ง&#10;ยืดเหยียด 5 นาที"
+                                      th:text="${editPlan != null ? #strings.listJoin(editPlan.exercises, '\n') : ''}"></textarea>
+                            <div class="hint">Enter each exercise on a new line</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Duration (minutes)</label>
+                            <input type="number" name="durationMinutes" class="form-input"
+                                   th:value="${editPlan != null ? editPlan.durationMinutes : ''}"
+                                   placeholder="e.g. 30" min="1">
+                        </div>
+
+                        <button type="submit" class="btn-primary"
+                                th:text="${editPlan != null ? 'Update Plan' : '+ Add Workout Plan'}">
+                            + Add Workout Plan
+                        </button>
+
+                        <div th:if="${editPlan != null}" style="text-align:center; margin-top:12px;">
+                            <a href="/manager/workout" style="color:#666; font-size:0.85rem; text-decoration:none;">Cancel Edit</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Workout List -->
+            <div>
+                <div class="card" style="margin-bottom:0;">
+                    <div class="card-header">
+                        <span class="card-title">All Workout Plans</span>
+                        <span style="font-size:0.8rem; color:#555;" th:text="${#lists.size(workoutPlans)} + ' plans'">0 plans</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="workout-list">
+                            <div th:each="plan : ${workoutPlans}" class="workout-card">
+                                <div class="wcard-top">
+                                    <div>
+                                        <div class="wcard-title" th:text="${plan.title}">Plan Title</div>
+                                        <div class="wcard-desc" th:text="${plan.description}">Description</div>
+                                    </div>
+                                    <span class="wcard-level"
+                                          th:classappend="${plan.level == 'Level 1'} ? 'level-1' : (${plan.level == 'Level 2'} ? 'level-2' : 'level-3')"
+                                          th:text="${plan.level}">Level</span>
+                                </div>
+
+                                <ol class="wcard-exercises">
+                                    <li th:each="ex : ${plan.exercises}" th:text="${ex}">Exercise</li>
+                                </ol>
+
+                                <div class="wcard-footer">
+                                    <div class="wcard-points" th:text="'+' + ${plan.points} + ' pts reward'">+0 pts reward</div>
+                                    <div class="action-btns">
+                                        <a th:href="'/manager/workout/edit?id=' + ${plan.id}" class="btn-edit">Edit</a>
+                                        <form th:action="'/manager/workout/delete?id=' + ${plan.id}" method="post" style="display:inline;">
+                                            <button type="submit" class="btn-delete"
+                                                    onclick="return confirm('Delete this workout plan?')">Delete</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div th:if="${#lists.isEmpty(workoutPlans)}" class="empty-state">
+                                <div class="empty-icon">🏋️</div>
+                                <div>No workout plans yet. Create the first one!</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

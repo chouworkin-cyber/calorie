@@ -1,0 +1,16 @@
+/* Import Google Font 'Kanit' */
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;700&display=swap');
+
+/* กำหนดฟอนต์ให้กับทุก Element ในหน้าเว็บ */
+* {
+    font-family: 'Kanit', sans-serif !important;
+}
+
+body {
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+}

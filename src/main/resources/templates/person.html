@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>SUT Health - Edit Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sut-orange: #b7764a;
+            --sut-dark: #5d5d5d;
+            --bg-gray: #f4f4f4;
+        }
+
+        body { 
+            font-family: 'Kanit', sans-serif; 
+            background: radial-gradient(circle, #f9f5f2 50%, #f7f1eb 100%); 
+            margin: 0; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        
+        .app-screen { 
+            width: 550px; 
+            height: 650px; 
+            background: white; 
+            position: relative; 
+            overflow: hidden; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            display: flex;
+            border-radius: 20px; 
+            flex-direction: column;
+        }
+
+        .header { 
+            background: var(--sut-dark); 
+            padding: 10px 20px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            flex-shrink: 0; 
+        }
+        .header .logo-text { font-weight: 800; font-size: 1.6rem; color: white; margin-left: auto; margin-right: -45px; } 
+        .header .logout-link { margin-left: auto; } 
+        .logout-link { color: white; text-decoration: none; font-size: 0.8rem; opacity: 0.8; font-weight: normal; }
+        .logout-link:hover { opacity: 1; text-decoration: underline; }
+
+        .content { 
+            flex-grow: 1; 
+            overflow-y: auto; 
+            padding: 20px; 
+            padding-bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 10px; 
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        .stat-box { 
+            background: white; 
+            border: 1px solid #eeeeee; 
+            padding: 12px; 
+            border-radius: 10px; 
+            text-align: center; 
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.250); 
+        }
+        .stat-box b { 
+            font-size: 1.1rem; 
+            display: block; 
+            color: var(--sut-dark); }
+        .stat-box span { 
+            font-size: 0.75rem; 
+            color: #888; }
+
+    
+        .section-title { color: var(--sut-orange); font-weight: bold; margin: 15px 0 10px; font-size: 0.9rem; align-self: flex-start; }
+        .list-item { 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 10px 15px; background: white; 
+            margin-bottom: 6px; border-radius: 6px; 
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            font-size: 0.85rem; 
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+    
+        .profile-upload { position: relative; margin-bottom: 20px; cursor: pointer; }
+        .preview-circle { 
+            width: 100px; height: 100px; background: var(--sut-orange); border-radius: 50%; 
+            border: 3px solid white; overflow: hidden; 
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .preview-circle img { width: 100%; height: 100%; object-fit: cover; }
+        .edit-hint { font-size: 0.75rem; color: #888; margin-top: 5px; text-align: center; }
+
+        
+        .input-group { width: 100%; margin-bottom: 15px; }
+        label { display: block; margin-bottom: 6px; color: var(--sut-dark); font-weight: 600; font-size: 0.85rem; }
+        input { 
+            width: 100%; padding: 12px; border-radius: 10px; 
+            border: 1px solid #eeeeee; background: white; 
+            box-sizing: border-box; font-size: 0.95rem; color: #444; 
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-save { 
+            width: 100%; padding: 12px; background: var(--sut-orange); 
+            color: white; border: none; border-radius: 10px; 
+            font-weight: bold; font-size: 1rem; cursor: pointer; 
+            transition: 0.3s; margin-top: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .btn-save:hover { background: #692e04; transform: translateY(-1px); }
+
+        .footer-link { display: inline-block; color: var(--sut-orange); text-decoration: none; font-weight: 600; margin-top: 15px; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+<div class="app-screen">
+    <div class="header">
+        <span class="logo-text">SUT</span>
+        <a href="/" class="logout-link">Logout</a>
+    </div>
+
+    <div class="content">
+        <!-- Dashboard Style Stats -->
+        <div class="stats-grid">
+            <div class="stat-box">
+                <b th:text="${user.points} + ' pts'">0 pts</b>
+                <span th:text="${'“' + user.motivationMessage + '”'}" style="color: var(--sut-orange); font-size: 0.7rem; font-weight: 600; display: block; margin-top: 2px;">“Keep going!”</span>
+                <span>Total Points</span>
+            </div>
+            <div class="stat-box">
+                <b th:text="${user.weight} + ' kg'">0 kg</b>
+                <span>Current Weight</span>
+            </div>
+        </div>
+
+    <form th:action="@{/person/update}" method="post" enctype="multipart/form-data" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+        
+        <label for="file-input" class="profile-upload">
+            <div class="preview-circle">
+                <img id="img-preview" th:src="${session.userImage != null ? session.userImage : '#'}" 
+                    th:style="${session.userImage == null ? 'display:none' : 'display:block'}" />
+                <span id="placeholder" th:style="${session.userImage != null ? 'display:none' : 'font-size:40px; color:white'}">👤</span>
+            </div>
+            <div class="edit-hint">Tap to change photo</div>
+        </label>
+        
+        <a href="javascript:void(0)" id="remove-photo-link" 
+           th:style="${session.userImage == null ? 'display:none' : 'display:block; margin-top: -10px; margin-bottom: 5px; font-size: 0.70rem; color: #692e04; text-decoration: none;'}"
+           onclick="removeProfileImage()">Remove Photo</a>
+
+        <input id="file-input" type="file" name="profileImage" accept="image/*" style="display: none;" onchange="previewImage(this)">
+        <input type="hidden" name="removeImage" id="remove-image-input" value="false">
+
+        <div class="input-group">
+            <label>Your Display Name</label>
+            <input type="text" name="username" th:value="${user.username}" placeholder="Enter your name" required>
+        </div>
+
+        <div class="section-title">Weight History</div>
+        <div class="list-item" th:each="entry : ${weightHistory}">
+            <span th:text="${#strings.arraySplit(entry, ' - ')[0]}">Date</span>
+            <b th:text="${#strings.arraySplit(entry, ' - ')[1]}">Weight</b>
+        </div>
+        <div th:if="${#lists.isEmpty(weightHistory)}" class="list-item" style="justify-content:center; color:#999;">
+            No history recorded yet
+        </div>
+
+        <button type="submit" class="btn-save">Save Changes</button>
+        <a href="/home" class="footer-link">Back</a>
+    </form>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('img-preview').src = e.target.result;
+                document.getElementById('img-preview').style.display = 'block';
+                document.getElementById('placeholder').style.display = 'none';
+                document.getElementById('remove-photo-link').style.display = 'block';
+                document.getElementById('remove-image-input').value = 'false';
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function removeProfileImage() {
+        document.getElementById('img-preview').src = '#';
+        document.getElementById('img-preview').style.display = 'none';
+        document.getElementById('placeholder').style.display = 'block';
+        document.getElementById('remove-photo-link').style.display = 'none';
+        document.getElementById('remove-image-input').value = 'true';
+        document.getElementById('file-input').value = ''; // ล้างไฟล์ที่เลือกค้างไว้
+    }
+</script>
+
+</body>
+</html>

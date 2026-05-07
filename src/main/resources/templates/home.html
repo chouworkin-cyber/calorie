@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>SUT Health - Home</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sut-orange: #b7764a;
+            --sut-dark: #5d5d5d;
+            --bg-gray: #f4f4f4;
+        }
+
+        body { 
+            font-family: 'Kanit', sans-serif; 
+            background: radial-gradient(circle, #f9f5f2 50%, #f7f1eb 100%); 
+            margin: 0; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            
+        }
+        
+        .app-screen { 
+            width: 550px; 
+            height: 650px; 
+            background: white; 
+            position: relative; 
+            overflow: hidden; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            display: flex;
+            border-radius: 20px; 
+            flex-direction: column;
+        }
+
+        .header { 
+            background: var(--sut-dark); 
+            padding: 10px 20px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            flex-shrink: 0; 
+        }
+        .header img { height: 30px; }
+        .logout-link { color: white; text-decoration: none; font-size: 0.8rem; opacity: 0.8; font-weight: normal; }
+        .logout-link:hover { opacity: 1; text-decoration: underline; }
+
+        .content { 
+            flex-grow: 1; 
+            overflow-y: auto; 
+            padding: 20px; 
+            padding-bottom: 90px; 
+        }
+
+        .profile-area { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; text-decoration: none; color: inherit; }
+        .profile-pic { 
+            width: 75px; height: 75px; 
+            background: var(--sut-orange); 
+            border-radius: 50%; 
+            overflow: hidden; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            border: 2px solid #f7f1eb; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
+        }
+        .profile-pic img { width: 100%; height: 100%; object-fit: cover; }
+
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 10px; 
+            margin-bottom: 15px; }
+        .stat-box { 
+            background: white; 
+            border: 1px solid #eeeeee; 
+            padding: 12px; 
+            border-radius: 10px; 
+            text-align: center; 
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.250); 
+        }
+        .stat-box b { 
+            font-size: 1.1rem; 
+            display: block; 
+            color: var(--sut-dark); }
+        .stat-box span { 
+            font-size: 0.75rem; 
+            color: #888; }
+
+        .point-btn { 
+            background: var(--sut-orange); 
+            color: #f7f1eb; padding: 10px; 
+            border: none; border-radius: 6px; 
+            width: 100%; font-weight: bold; 
+            margin-bottom: 15px; 
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.250);
+         }
+
+
+        .menu-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr 1fr; 
+            gap: 8px; 
+            margin-bottom: 20px; }
+
+        .menu-item { 
+            background: #7a7a7a; 
+            color: white; 
+            padding: 12px 2px; 
+            border-radius: 6px; 
+            text-decoration: none; 
+            text-align: center; 
+            font-size: 0.7rem; 
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.250);}
+
+    
+        .summary-title { 
+            color: var(--sut-orange); 
+            font-weight: bold; 
+            margin-bottom: 10px; 
+            border-bottom: #ffffff; 
+            padding-bottom: 4px; font-size: 0.9rem; }
+        .list-item { 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 10px; background: white; 
+            margin-bottom: 6px; border-radius: 6px; 
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.250);
+            font-size: 0.85rem; }
+
+    
+        .bottom-nav { 
+            position: absolute; bottom: 0; width: 100%; 
+            background: var(--sut-dark); height: 65px; 
+            display: flex; justify-content: space-around; align-items: center;
+            border-radius: 20px 20px 0 0;
+        }
+        .nav-link { color: var(--sut-orange); text-decoration: none; font-size: 0.8rem; text-align: center; flex: 1; }
+        
+        .nav-home-active { 
+            background: var(--sut-orange); color: white; 
+            width: 65px; height: 65px; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center;
+            border: 4px solid white; margin-top: -35px;
+            font-weight: bold; box-shadow: 0 -3px 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-screen">
+    <div class="header">
+        <span style="font-weight: 800; font-size: 1.6rem; color: white; letter-spacing: 1px;">SUT</span>
+    </div>
+
+    <div class="content">
+        <a href="/person" class="profile-area">
+            <div class="profile-pic">
+                <img th:if="${session.userImage != null}" th:src="${session.userImage}" />
+                <span th:if="${session.userImage == null}" style="color: white; font-size: 30px;">👤</span>
+            </div>
+            <div>
+                <b th:text="${session.username != null ? session.username : 'Username'}">Username</b>
+                <div style="font-size: 0.75rem; color: #888;">edit profile ></div>
+            </div>
+        </a>
+
+        <div class="stats-grid">
+            <a href="/calculate" style="text-decoration: none; display: block;">
+                <div class="stat-box" style="cursor: pointer;">
+                    <b th:text="${totalEaten != null ? totalEaten : 0} + '/' + ${session.targetKcal != null ? session.targetKcal : 2000}">0/2000</b>
+                    <span>Kcal's today</span>
+                </div>
+            </a>
+            <div class="stat-box">
+                <b th:text="${currentWeight != null ? currentWeight : 0}">65</b>
+                <span>weight's today</span>
+            </div>
+        </div>
+
+        <button class="point-btn" th:text="'Point: ' + ${points}">Point: 0</button>
+
+        <div class="menu-grid">
+            <a href="/food" class="menu-item">Food tracking</a>
+            <a href="/health" class="menu-item">Health tracking</a>
+            <a href="/workout" class="menu-item">Workout plan</a>
+        </div>
+
+        <div class="summary-title">Today Summary</div>
+        <div class="list-item"><span>Breakfast</span> <b th:text="${breakfast} + ' kcal'">500 kcal</b></div>
+        <div class="list-item"><span>Lunch</span> <b th:text="${lunch} + ' kcal'">500 kcal</b></div>
+        <div class="list-item"><span>Dinner</span> <b th:text="${dinner} + ' kcal'">500 kcal</b></div>
+    </div>
+
+</div>
+
+</body>
+</html>
