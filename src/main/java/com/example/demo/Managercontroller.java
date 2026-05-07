@@ -77,7 +77,7 @@ public class Managercontroller {
         if (editId != null && foodDB.containsKey(editId)) {
             model.addAttribute("editFood", foodDB.get(editId));
         }
-        return "ood";
+        return "manageFood";
     }
 
     @PostMapping("/food/add")
@@ -103,7 +103,7 @@ public class Managercontroller {
         if (foodDB.containsKey(id)) {
             model.addAttribute("editFood", foodDB.get(id));
         }
-        return "ood";
+        return "manageFood";
     }
 
     @PostMapping("/food/update")
@@ -151,7 +151,7 @@ public class Managercontroller {
         if (editId != null && workoutDB.containsKey(editId)) {
             model.addAttribute("editPlan", workoutDB.get(editId));
         }
-        return "manageworkout";
+        return "manageWorkout";
     }
 
     @PostMapping("/workout/add")
@@ -179,7 +179,7 @@ public class Managercontroller {
         if (workoutDB.containsKey(id)) {
             model.addAttribute("editPlan", workoutDB.get(id));
         }
-        return "manageworkout";
+        return "manageWorkout";
     }
 
     @PostMapping("/workout/update")
@@ -241,7 +241,7 @@ public class Managercontroller {
 
         model.addAttribute("allUsers",           users);
         model.addAttribute("avgPoints",          avgPts);
-        return "manageuser";
+        return "manageUser";
     }
 
     @PostMapping("/users/reset")
