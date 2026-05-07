@@ -94,7 +94,7 @@ public class Managercontroller {
         FoodItem item = new FoodItem(id, name.trim(), calories, category, protein, carbs, fat);
         foodDB.put(id, item);
         ra.addFlashAttribute("successMsg", "✓ Added: " + name);
-        return "redirect:/manager/food";
+        return "redirect:/manager/Food";
     }
 
     @GetMapping("/food/edit")
@@ -127,7 +127,7 @@ public class Managercontroller {
             item.setFat(fat);
             ra.addFlashAttribute("successMsg", "✓ Updated: " + name);
         }
-        return "redirect:/manager/food";
+        return "redirect:/manager/Food";
     }
 
     @PostMapping("/food/delete")
@@ -136,7 +136,7 @@ public class Managercontroller {
         if (removed != null) {
             ra.addFlashAttribute("successMsg", "✓ Deleted: " + removed.getName());
         }
-        return "redirect:/manager/food";
+        return "redirect:/manager/Food";
     }
 
     public static Map<String, Integer> getSharedPresetFoods() {
@@ -170,7 +170,7 @@ public class Managercontroller {
                 description.trim(), exercises, durationMinutes);
         workoutDB.put(id, plan);
         ra.addFlashAttribute("successMsg", "✓ Added: " + title);
-        return "redirect:/manager/workout";
+        return "redirect:/manager/Workout";
     }
 
     @GetMapping("/workout/edit")
@@ -204,7 +204,7 @@ public class Managercontroller {
             plan.setKey(level);
             ra.addFlashAttribute("successMsg", "✓ Updated: " + title);
         }
-        return "redirect:/manager/workout";
+        return "redirect:/manager/Workout";
     }
 
     @PostMapping("/workout/delete")
@@ -213,7 +213,7 @@ public class Managercontroller {
         if (removed != null) {
             ra.addFlashAttribute("successMsg", "✓ Deleted: " + removed.getTitle());
         }
-        return "redirect:/manager/workout";
+        return "redirect:/manager/Workout";
     }
 
     
@@ -255,7 +255,7 @@ public class Managercontroller {
             user.setBmiStatus(null);
             ra.addFlashAttribute("successMsg", "✓ Reset data for: " + username);
         }
-        return "redirect:/manager/users";
+        return "redirect:/manager/Users";
     }
 
     @PostMapping("/users/delete")
@@ -264,7 +264,7 @@ public class Managercontroller {
         if (removed != null) {
             ra.addFlashAttribute("successMsg", "✓ Deleted user: " + username);
         }
-        return "redirect:/manager/users";
+        return "redirect:/manager/Users";
     }
 
     
