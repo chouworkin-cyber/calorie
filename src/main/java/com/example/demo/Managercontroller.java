@@ -77,7 +77,7 @@ public class Managercontroller {
         if (editId != null && foodDB.containsKey(editId)) {
             model.addAttribute("editFood", foodDB.get(editId));
         }
-        return "manageFood";
+        return "manageFood"; // ตรวจสอบว่าชื่อไฟล์ใน resources/templates สะกดแบบนี้หรือไม่
     }
 
     @PostMapping("/food/add")
@@ -94,7 +94,7 @@ public class Managercontroller {
         FoodItem item = new FoodItem(id, name.trim(), calories, category, protein, carbs, fat);
         foodDB.put(id, item);
         ra.addFlashAttribute("successMsg", "✓ Added: " + name);
-        return "redirect:/manager/Food";
+        return "redirect:/manager/food";
     }
 
     @GetMapping("/food/edit")
@@ -127,7 +127,7 @@ public class Managercontroller {
             item.setFat(fat);
             ra.addFlashAttribute("successMsg", "✓ Updated: " + name);
         }
-        return "redirect:/manager/Food";
+        return "redirect:/manager/food";
     }
 
     @PostMapping("/food/delete")
@@ -136,7 +136,7 @@ public class Managercontroller {
         if (removed != null) {
             ra.addFlashAttribute("successMsg", "✓ Deleted: " + removed.getName());
         }
-        return "redirect:/manager/Food";
+        return "redirect:/manager/food";
     }
 
     public static Map<String, Integer> getSharedPresetFoods() {
@@ -151,7 +151,7 @@ public class Managercontroller {
         if (editId != null && workoutDB.containsKey(editId)) {
             model.addAttribute("editPlan", workoutDB.get(editId));
         }
-        return "manageWorkout";
+        return "Manageworkout";
     }
 
     @PostMapping("/workout/add")
@@ -170,7 +170,7 @@ public class Managercontroller {
                 description.trim(), exercises, durationMinutes);
         workoutDB.put(id, plan);
         ra.addFlashAttribute("successMsg", "✓ Added: " + title);
-        return "redirect:/manager/Workout";
+        return "redirect:/manager/workout";
     }
 
     @GetMapping("/workout/edit")
@@ -179,7 +179,7 @@ public class Managercontroller {
         if (workoutDB.containsKey(id)) {
             model.addAttribute("editPlan", workoutDB.get(id));
         }
-        return "manageWorkout";
+        return "Manageworkout";
     }
 
     @PostMapping("/workout/update")
@@ -204,7 +204,7 @@ public class Managercontroller {
             plan.setKey(level);
             ra.addFlashAttribute("successMsg", "✓ Updated: " + title);
         }
-        return "redirect:/manager/Workout";
+        return "redirect:/manager/workout";
     }
 
     @PostMapping("/workout/delete")
@@ -213,7 +213,7 @@ public class Managercontroller {
         if (removed != null) {
             ra.addFlashAttribute("successMsg", "✓ Deleted: " + removed.getTitle());
         }
-        return "redirect:/manager/Workout";
+        return "redirect:/manager/workout";
     }
 
     
