@@ -190,7 +190,7 @@
                         <div class="form-group">
                             <label class="form-label">Exercises (one per line)</label>
                             <textarea name="exercisesRaw" class="form-textarea" style="min-height:100px;"
-                                      placeholder="เดินเร็ว 15 นาที&#10;Squat 10 ครั้ง&#10;ยืดเหยียด 5 นาที"
+                                      placeholder="walking 15 minutes&#10;Squat 10 times&#10;Stretching 5 minutes"
                                       th:text="${editPlan?.exercises != null ? #strings.listJoin(editPlan.exercises, '\n') : ''}"></textarea>
                             <div class="hint">Enter each exercise on a new line</div>
                         </div>
