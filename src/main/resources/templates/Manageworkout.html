@@ -149,12 +149,12 @@
                 <div class="card-body">
                     <form th:action="${editPlan != null ? '/manager/workout/update' : '/manager/workout/add'}" method="post">
 
-                        <input type="hidden" name="id" th:value="${editPlan != null ? editPlan.id : ''}" />
+                        <input type="hidden" name="id" th:value="${editPlan?.id}" />
 
                         <div class="form-group">
                             <label class="form-label">Plan Title</label>
                             <input type="text" name="title" class="form-input"
-                                   th:value="${editPlan != null ? editPlan.title : ''}"
+                                   th:value="${editPlan?.title}"
                                    placeholder="e.g. Beginner Cardio" required>
                         </div>
 
@@ -162,22 +162,22 @@
                             <label class="form-label">Description</label>
                             <textarea name="description" class="form-textarea"
                                       placeholder="Short description of this plan..."
-                                      th:text="${editPlan != null ? editPlan.description : ''}"></textarea>
+                                      th:text="${editPlan?.description}"></textarea>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">Difficulty Level</label>
                                 <select name="level" class="form-select">
-                                    <option value="Level 1" th:selected="${editPlan != null && editPlan.level == 'Level 1'}">Level 1 – Beginner</option>
-                                    <option value="Level 2" th:selected="${editPlan != null && editPlan.level == 'Level 2'}">Level 2 – Normal</option>
-                                    <option value="Level 3" th:selected="${editPlan != null && editPlan.level == 'Level 3'}">Level 3 – Advanced</option>
+                                    <option value="Level 1" th:selected="${editPlan?.level == 'Level 1'}">Level 1 – Beginner</option>
+                                    <option value="Level 2" th:selected="${editPlan?.level == 'Level 2'}">Level 2 – Normal</option>
+                                    <option value="Level 3" th:selected="${editPlan?.level == 'Level 3'}">Level 3 – Advanced</option>
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Points Reward</label>
                                 <input type="number" name="points" class="form-input"
-                                       th:value="${editPlan != null ? editPlan.points : ''}"
+                                       th:value="${editPlan?.points}"
                                        placeholder="e.g. 80" min="1" required>
                             </div>
                         </div>
@@ -186,14 +186,14 @@
                             <label class="form-label">Exercises (one per line)</label>
                             <textarea name="exercisesRaw" class="form-textarea" style="min-height:100px;"
                                       placeholder="เดินเร็ว 15 นาที&#10;Squat 10 ครั้ง&#10;ยืดเหยียด 5 นาที"
-                                      th:text="${editPlan != null ? #strings.listJoin(editPlan.exercises, '\n') : ''}"></textarea>
+                                      th:text="${editPlan?.exercises != null ? #strings.listJoin(editPlan.exercises, '\n') : ''}"></textarea>
                             <div class="hint">Enter each exercise on a new line</div>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label">Duration (minutes)</label>
                             <input type="number" name="durationMinutes" class="form-input"
-                                   th:value="${editPlan != null ? editPlan.durationMinutes : ''}"
+                                   th:value="${editPlan?.durationMinutes}"
                                    placeholder="e.g. 30" min="1">
                         </div>
 
@@ -214,11 +214,11 @@
                 <div class="card" style="margin-bottom:0;">
                     <div class="card-header">
                         <span class="card-title">All Workout Plans</span>
-                        <span style="font-size:0.8rem; color:#555;" th:text="${#lists.size(workoutPlans)} + ' plans'">0 plans</span>
+                        <span style="font-size:0.8rem; color:#555;" th:text="${workoutPlans != null ? #lists.size(workoutPlans) : 0} + ' plans'">0 plans</span>
                     </div>
                     <div class="card-body">
                         <div class="workout-list">
-                            <div th:each="plan : ${workoutPlans}" class="workout-card">
+                            <div th:each="plan : ${workoutPlans}" th:if="${workoutPlans != null}" class="workout-card">
                                 <div class="wcard-top">
                                     <div>
                                         <div class="wcard-title" th:text="${plan.title}">Plan Title</div>
@@ -245,7 +245,7 @@
                                 </div>
                             </div>
 
-                            <div th:if="${#lists.isEmpty(workoutPlans)}" class="empty-state">
+                            <div th:if="${workoutPlans == null || #lists.isEmpty(workoutPlans)}" class="empty-state">
                                 <div class="empty-icon">🏋️</div>
                                 <div>No workout plans yet. Create the first one!</div>
                             </div>
