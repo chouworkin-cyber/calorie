@@ -77,7 +77,7 @@ public class Managercontroller {
         if (editId != null && foodDB.containsKey(editId)) {
             model.addAttribute("editFood", foodDB.get(editId));
         }
-        return "manageFood"; // ตรวจสอบว่าชื่อไฟล์ใน resources/templates สะกดแบบนี้หรือไม่
+        return "food"; 
     }
 
     @PostMapping("/food/add")
@@ -103,7 +103,7 @@ public class Managercontroller {
         if (foodDB.containsKey(id)) {
             model.addAttribute("editFood", foodDB.get(id));
         }
-        return "manageFood";
+        return "food";
     }
 
     @PostMapping("/food/update")
@@ -255,7 +255,7 @@ public class Managercontroller {
             user.setBmiStatus(null);
             ra.addFlashAttribute("successMsg", "✓ Reset data for: " + username);
         }
-        return "redirect:/manager/Users";
+        return "redirect:/manager/users";
     }
 
     @PostMapping("/users/delete")
@@ -264,7 +264,7 @@ public class Managercontroller {
         if (removed != null) {
             ra.addFlashAttribute("successMsg", "✓ Deleted user: " + username);
         }
-        return "redirect:/manager/Users";
+        return "redirect:/manager/users";
     }
 
     

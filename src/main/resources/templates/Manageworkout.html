@@ -8,6 +8,11 @@
         :root { --orange: #b7764a; --orange-light: #d4956e; --cream: #f7f1eb; --success: #4caf7d; --danger: #e05c5c; --info: #5c8fe0; --text-dark: #424242; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
+        @keyframes contentFadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         body { font-family: 'Kanit', 'DM Sans', sans-serif; background: radial-gradient(circle, #f9f5f2 50%, #f7f1eb 100%); min-height: 100vh; display: flex; color: var(--text-dark); }
 
         .sidebar { width: 240px; background: #ffffff; min-height: 100vh; display: flex; flex-direction: column; border-right: 1px solid rgba(0,0,0,0.05); flex-shrink: 0; }
@@ -31,7 +36,7 @@
         .topbar-title { font-weight: 600; font-size: 1.4rem; color: var(--text-dark); }
         .btn-logout { background: transparent; border: 1px solid rgba(0,0,0,0.1); color: #666; padding: 7px 16px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; text-decoration: none; transition: all 0.2s; }
         .btn-logout:hover { border-color: var(--danger); color: var(--danger); }
-        .content { padding: 32px; flex: 1; }
+        .content { padding: 32px; flex: 1; animation: contentFadeIn 0.5s ease-out; }
 
         .page-grid { display: grid; grid-template-columns: 420px 1fr; gap: 24px; align-items: start; }
 
