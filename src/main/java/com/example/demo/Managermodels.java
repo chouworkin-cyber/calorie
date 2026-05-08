@@ -2,6 +2,8 @@ package com.example.demo;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 
 
 abstract class NamedItem {
@@ -223,6 +225,12 @@ class HealthUser extends RegisteredUser {
 
 class UserRecord extends HealthUser {
     private int totalEaten;
+    private int breakfastTotal, lunchTotal, dinnerTotal;
+    private List<String> breakfastItems = new ArrayList<>();
+    private List<String> lunchItems = new ArrayList<>();
+    private List<String> dinnerItems = new ArrayList<>();
+    private List<String> weightHistory = new ArrayList<>();
+    private Map<String, Boolean> claimedWorkouts = new HashMap<>();
 
     public UserRecord(int id, String username) {
         super(id, username);
@@ -232,8 +240,20 @@ class UserRecord extends HealthUser {
     public int  getTotalEaten() { return totalEaten; }
     public void setTotalEaten(int t) { this.totalEaten = t; }
 
+    public int getBreakfastTotal() { return breakfastTotal; }
+    public int getLunchTotal() { return lunchTotal; }
+    public int getDinnerTotal() { return dinnerTotal; }
+    public List<String> getBreakfastItems() { return breakfastItems; }
+    public List<String> getLunchItems() { return lunchItems; }
+    public List<String> getDinnerItems() { return dinnerItems; }
+    public List<String> getWeightHistory() { return weightHistory; }
+    public Map<String, Boolean> getClaimedWorkouts() { return claimedWorkouts; }
+
     public void syncFromSession(String username, Integer targetKcal, Double weight,
-                                Double height, String bmiStatus, Integer points, Integer totalEaten) {
+                                Double height, String bmiStatus, Integer points, Integer totalEaten,
+                                Integer bTotal, Integer lTotal, Integer dTotal,
+                                List<String> bItems, List<String> lItems, List<String> dItems,
+                                List<String> history, Map<String, Boolean> workouts) {
         this.name = username;
         if (targetKcal != null) this.targetKcal = targetKcal;
         if (weight     != null) this.weight     = weight;
@@ -241,6 +261,15 @@ class UserRecord extends HealthUser {
         if (bmiStatus  != null) this.bmiStatus  = bmiStatus;
         if (points     != null) this.points     = points;
         if (totalEaten != null) this.totalEaten = totalEaten;
+        
+        if (bTotal != null) this.breakfastTotal = bTotal;
+        if (lTotal != null) this.lunchTotal = lTotal;
+        if (dTotal != null) this.dinnerTotal = dTotal;
+        if (bItems != null) this.breakfastItems = new ArrayList<>(bItems);
+        if (lItems != null) this.lunchItems = new ArrayList<>(lItems);
+        if (dItems != null) this.dinnerItems = new ArrayList<>(dItems);
+        if (history != null) this.weightHistory = new ArrayList<>(history);
+        if (workouts != null) this.claimedWorkouts = new HashMap<>(workouts);
     }
 
     @Override

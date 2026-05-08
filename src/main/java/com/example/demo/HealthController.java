@@ -31,17 +31,42 @@ public class HealthController {
     @PostMapping("/login")
     public String handleLogin(@RequestParam String username, HttpSession session) {
         session.setAttribute("username", username);
+        
+        UserRecord existingUser = Managercontroller.getUserRecord(username);
+        if (existingUser != null) {
+            // โหลดข้อมูลเดิมกลับเข้า Session
+            session.setAttribute("targetKcal", existingUser.getTargetKcal());
+            session.setAttribute("userWeight", existingUser.getWeight());
+            session.setAttribute("userHeight", existingUser.getHeight());
+            session.setAttribute("userStatus", existingUser.getBmiStatus());
+            session.setAttribute("points", existingUser.getPoints());
+            session.setAttribute("breakfastTotal", existingUser.getBreakfastTotal());
+            session.setAttribute("lunchTotal", existingUser.getLunchTotal());
+            session.setAttribute("dinnerTotal", existingUser.getDinnerTotal());
+            session.setAttribute("breakfastItems", new ArrayList<>(existingUser.getBreakfastItems()));
+            session.setAttribute("lunchItems", new ArrayList<>(existingUser.getLunchItems()));
+            session.setAttribute("dinnerItems", new ArrayList<>(existingUser.getDinnerItems()));
+            session.setAttribute("weightHistory", new ArrayList<>(existingUser.getWeightHistory()));
+            
+            existingUser.getClaimedWorkouts().forEach((key, val) -> {
+                session.setAttribute(key + "Claimed", val);
+            });
+        } else {
+            // กำหนดค่าเริ่มต้นสำหรับผู้ใช้ใหม่
+            session.setAttribute("breakfastTotal", 0);
+            session.setAttribute("lunchTotal", 0);
+            session.setAttribute("dinnerTotal", 0);
+            session.setAttribute("breakfastItems", new ArrayList<String>());
+            session.setAttribute("lunchItems", new ArrayList<String>());
+            session.setAttribute("dinnerItems", new ArrayList<String>());
+            session.setAttribute("points", 0);
+            session.setAttribute("weightHistory", new ArrayList<String>());
+            session.setAttribute("targetKcal", 2000);
 
-        session.setAttribute("breakfastTotal", 0);
-        session.setAttribute("lunchTotal", 0);
-        session.setAttribute("dinnerTotal", 0);
-        session.setAttribute("breakfastItems", new ArrayList<String>());
-        session.setAttribute("lunchItems", new ArrayList<String>());
-        session.setAttribute("dinnerItems", new ArrayList<String>());
-
-        Managercontroller.getSharedWorkoutPlans().forEach(plan -> {
-            session.setAttribute(plan.getKey() + "Claimed", false);
-        });
+            Managercontroller.getSharedWorkoutPlans().forEach(plan -> {
+                session.setAttribute(plan.getKey() + "Claimed", false);
+            });
+        }
 
         syncWithManager(session); 
         return "redirect:/home";
@@ -342,7 +367,21 @@ public class HealthController {
         String bmiStatus = (String) session.getAttribute("userStatus");
         Integer points = (Integer) session.getAttribute("points");
         int totalEaten = getMealTotal(session, "breakfast") + getMealTotal(session, "lunch") + getMealTotal(session, "dinner");
+        
+        Integer bTotal = getMealTotal(session, "breakfast");
+        Integer lTotal = getMealTotal(session, "lunch");
+        Integer dTotal = getMealTotal(session, "dinner");
+        List<String> bItems = getMealItems(session, "breakfast");
+        List<String> lItems = getMealItems(session, "lunch");
+        List<String> dItems = getMealItems(session, "dinner");
+        List<String> history = getWeightHistory(session);
+        
+        Map<String, Boolean> workouts = new LinkedHashMap<>();
+        Managercontroller.getSharedWorkoutPlans().forEach(p -> {
+            workouts.put(p.getKey(), isWorkoutClaimed(session, p.getKey()));
+        });
 
-        Managercontroller.syncUser(username, targetKcal, weight, height, bmiStatus, points, totalEaten);
+        Managercontroller.syncUser(username, targetKcal, weight, height, bmiStatus, points, totalEaten,
+                                   bTotal, lTotal, dTotal, bItems, lItems, dItems, history, workouts);
     }
 }
