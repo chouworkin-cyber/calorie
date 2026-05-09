@@ -62,6 +62,7 @@ public class Managercontroller {
             foodIdSeq.set((Integer) allData.get("foodSeq"));
             workoutIdSeq.set((Integer) allData.get("workoutSeq"));
             userIdSeq.set((Integer) allData.get("userSeq"));
+            System.out.println(">>> [SUCCESS] Database loaded from " + DATA_FILE);
         } catch (Exception e) {
             System.err.println("Could not load saved data: " + e.getMessage());
         }
@@ -110,7 +111,7 @@ public class Managercontroller {
     @GetMapping("/food")
     public String foodPage(
             @RequestParam(required = false) Integer editId,
-            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false, defaultValue = "caloriesAsc") String sortBy,
             @RequestParam(required = false) String searchName,
             @RequestParam(required = false) String searchCategory,
             Model model) {
@@ -130,19 +131,32 @@ public class Managercontroller {
                     .collect(Collectors.toList());
         }
 
-        // เรียงลำดับข้อมูล
-        if ("calories".equals(sortBy)) {
-            items.sort(Comparator.comparingInt(FoodItem::getCalories));
+        // ระบบเรียงลำดับข้อมูลอาหาร
+        // กำหนดให้เป็น Default Sort เมื่อเปิดหน้าเว็บ
+        if (sortBy == null || "calories".equals(sortBy) || "caloriesAsc".equals(sortBy) || "lowCal".equals(sortBy)) {
+            items.sort(Comparator.comparingInt(FoodItem::getCalories)); // เรียงจากน้อยไปมาก (Low to High)
+        } else if ("caloriesDesc".equals(sortBy)) {
+            items.sort(Comparator.comparingInt(FoodItem::getCalories).reversed());
         } else if ("name".equals(sortBy)) {
             items.sort(Comparator.comparing(FoodItem::getName));
+        } else if ("nameDesc".equals(sortBy)) {
+            items.sort(Comparator.comparing(FoodItem::getName).reversed());
         } else if ("category".equals(sortBy)) {
             items.sort(Comparator.comparing(FoodItem::getCategory));
+        } else if ("categoryDesc".equals(sortBy)) {
+            items.sort(Comparator.comparing(FoodItem::getCategory).reversed());
         } else if ("protein".equals(sortBy)) {
             items.sort(Comparator.comparingDouble(FoodItem::getProtein).reversed());
+        } else if ("proteinAsc".equals(sortBy)) {
+            items.sort(Comparator.comparingDouble(FoodItem::getProtein));
         } else if ("carbs".equals(sortBy)) {
             items.sort(Comparator.comparingDouble(FoodItem::getCarbs).reversed());
+        } else if ("carbsAsc".equals(sortBy)) {
+            items.sort(Comparator.comparingDouble(FoodItem::getCarbs));
         } else if ("fat".equals(sortBy)) {
             items.sort(Comparator.comparingDouble(FoodItem::getFat).reversed());
+        } else if ("fatAsc".equals(sortBy)) {
+            items.sort(Comparator.comparingDouble(FoodItem::getFat));
         }
 
         model.addAttribute("foodItems", items);
@@ -432,8 +446,11 @@ public class Managercontroller {
         }
 
         // เรียงลำดับผู้ใช้ (เช่น แต้มมากที่สุด หรือเรียงตามชื่อ)
-        if ("points".equals(sortBy)) {
+        // กำหนดให้การเรียงคะแนนจากมากไปน้อยเป็นค่าเริ่มต้น (Default Sort)
+        if (sortBy == null || sortBy.isBlank() || "points".equals(sortBy) || "pointsDesc".equals(sortBy)) {
             users.sort(Comparator.comparingInt(UserRecord::getPoints).reversed());
+        } else if ("pointsAsc".equals(sortBy)) {
+            users.sort(Comparator.comparingInt(UserRecord::getPoints));
         } else if ("username".equals(sortBy)) {
             users.sort(Comparator.comparing(UserRecord::getUsername));
         } else if ("weight".equals(sortBy)) {
@@ -488,7 +505,9 @@ public class Managercontroller {
                             List<String> history, Map<String, Boolean> workouts) {
 
         // ไม่บันทึกผู้ใช้งานที่ใช้ชื่อ "manager" หรือ "admin" ลงในฐานข้อมูลกลาง เพื่อไม่ให้ปรากฏในส่วนจัดการผู้ใช้
-        if (username == null || username.isBlank() || "manager".equalsIgnoreCase(username)) {
+        // เพิ่มการยกเว้น admin1 ตามที่ตั้งค่าไว้ในหน้า login
+        if (username == null || username.isBlank() || 
+            "manager".equalsIgnoreCase(username) || "admin1".equalsIgnoreCase(username)) {
             return;
         }
 
@@ -499,11 +518,23 @@ public class Managercontroller {
         saveData();
     }
 
+    public static void renameUser(String oldName, String newName) {
+        if (oldName == null || newName == null || oldName.equals(newName)) return;
+        if ("manager".equalsIgnoreCase(newName) || newName.isBlank()) return;
+        
+        UserRecord record = userDB.remove(oldName); // ดึงข้อมูลเดิมออกมาจากชื่อเก่า
+        if (record != null) {
+            record.setName(newName);
+            userDB.put(newName, record); // บันทึกเข้าไปใหม่ด้วยชื่อใหม่
+            saveData();
+        }
+    }
+
     public static UserRecord getUserRecord(String username) {
         return userDB.get(username);
     }
 
-    // ดึงรายชื่อผู้ใช้ทั้งหมดที่จัดลำดับคะแนนแล้ว
+    
     public static List<UserRecord> getAllUsersSorted() {
         List<UserRecord> users = new ArrayList<>(userDB.values());
         users.sort(Comparator.comparingInt(UserRecord::getPoints).reversed());

@@ -201,12 +201,12 @@ class RegisteredUser extends NamedItem {
 
    
     public String getMotivationMessage() {
-        String[] levels = { 
-            "Keep going!", "You're great!", "Doing amazing!", 
-            "Superstar status!", "Legendary effort!", "Ultimate Master!" 
+        String[] titles = { 
+            "keep going!", "You're great!", "Doing amazing!", "Superstar status!"
+            , "Legendary effort!", "Ultimate Master!"
         };
-        int idx = Math.min(points / 100, levels.length - 1);
-        return levels[idx];
+        int idx = Math.min(points / 100, titles.length - 1);
+        return titles[idx];
     }
 
     @Override

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.multipart.MultipartFile;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
@@ -29,14 +30,28 @@ public class HealthController {
     @PostMapping("/login")
     public String handleLogin(@RequestParam String username, 
                               @RequestParam String password, 
-                              HttpSession session,
+                              HttpServletRequest request,
                               RedirectAttributes ra) {
-        
-        // ตรวจสอบความยาวรหัสผ่าน (ไม่ต่ำกว่า 8 ตัว)
-        if (password == null || password.length() < 8) {
-            ra.addFlashAttribute("loginError", "password must be at least 8 characters long");
+
+        // ตรวจสอบว่าเป็นกลุ่มผู้จัดการหรือไม่ (manager, admin, admin1)
+        boolean isManager = "manager".equalsIgnoreCase(username) || 
+                            "admin".equalsIgnoreCase(username) || 
+                            "admin1".equalsIgnoreCase(username);
+
+        // ตรวจสอบความยาวรหัสผ่านเฉพาะผู้ใช้ทั่วไป (ต้องไม่ต่ำกว่า 8 ตัว)
+        if (!isManager && (password == null || password.length() < 8)) {
+            ra.addFlashAttribute("loginError", "รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร");
             return "redirect:/login";
         }
+
+        // ล้างข้อมูลเซสชันเก่าทั้งหมดทิ้ง (รวมถึงข้อมูลคนก่อนหน้า) เพื่อเริ่มเซสชันใหม่ที่สะอาด 100%
+        HttpSession oldSession = request.getSession(false);
+        if (oldSession != null) {
+            oldSession.invalidate();
+        }
+        HttpSession session = request.getSession(true); 
+        
+        session.setAttribute("username", username); // ต้องตั้งค่า username ในเซสชันใหม่ทันที
 
         UserRecord existingUser = Managercontroller.getUserRecord(username);
         if (existingUser != null) {
@@ -44,7 +59,6 @@ public class HealthController {
                 ra.addFlashAttribute("loginError", "Invalid password for existing user");
                 return "redirect:/login";
             }
-            session.setAttribute("username", username);
         
             session.setAttribute("password", existingUser.getPassword());
             session.setAttribute("userImage", existingUser.getProfileImage());
@@ -67,8 +81,12 @@ public class HealthController {
             });
         } else {
             // กำหนดค่าเริ่มต้นสำหรับผู้ใช้ใหม่
-            session.setAttribute("username", username);
+            // Username และ Display Name คือชื่อเดียวกันที่ได้จากการเข้าสู่ระบบครั้งแรก
             session.setAttribute("password", password);
+            session.setAttribute("userWeight", 0.0);
+            session.setAttribute("goalWeight", 0.0);
+            session.setAttribute("userHeight", 0.0);
+            session.setAttribute("userStatus", "normal");
             session.setAttribute("breakfastTotal", 0);
             session.setAttribute("lunchTotal", 0);
             session.setAttribute("dinnerTotal", 0);
@@ -80,12 +98,20 @@ public class HealthController {
             session.setAttribute("targetKcal", 2000);
 
             Managercontroller.getSharedWorkoutPlans().forEach(plan -> {
+                // ตรวจสอบให้แน่ใจว่า plan.getKey() ไม่เป็น null ก่อนใช้งาน
                 session.setAttribute(plan.getKey() + "Claimed", false);
             });
         }
 
         syncWithManager(session); 
         return "redirect:/home";
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        // ทำลายเซสชันเมื่อผู้ใช้กดออกจากระบบ
+        session.invalidate();
+        return "redirect:/login";
     }
     
     @GetMapping("/calculate")
@@ -133,8 +159,10 @@ public class HealthController {
 
     @GetMapping("/food")
     public String showFoodPage(@RequestParam(required = false) String searchPreset, 
+                               @RequestParam(required = false, defaultValue = "lowCal") String sortBy,
+                               @RequestParam(required = false) Integer maxCal,
                                HttpSession session, Model model) {
-        populateFoodModel(session, model, searchPreset);
+        populateFoodModel(session, model, searchPreset, sortBy, maxCal);
         return "food";
     }
 
@@ -205,9 +233,17 @@ public class HealthController {
     public String showWorkoutPage(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String level,
             HttpSession session, Model model) {
         
         List<Map<String, Object>> plans = getWorkoutPlans(session);
+
+        // ระบบกรองตามระดับความยาก (Level Filter)
+        if (level != null && !level.isBlank()) {
+            plans = plans.stream()
+                    .filter(p -> ((String) p.get("level")).equalsIgnoreCase(level))
+                    .collect(Collectors.toList());
+        }
 
         // เพิ่มระบบค้นหาท่าออกกำลังกายสำหรับผู้ใช้
         if (search != null && !search.isBlank()) {
@@ -223,11 +259,14 @@ public class HealthController {
             plans.sort(Comparator.comparingInt(p -> (int) p.get("points")));
         } else if ("title".equals(sortBy)) {
             plans.sort(Comparator.comparing(p -> (String) p.get("title")));
+        } else if ("level".equals(sortBy)) {
+            plans.sort(Comparator.comparing(p -> (String) p.get("level")));
         }
 
         model.addAttribute("points", getPoints(session));
         model.addAttribute("workoutPlans", plans);
         model.addAttribute("search", search);
+        model.addAttribute("level", level);
         model.addAttribute("sortBy", sortBy);
         return "workout";
     }
@@ -282,6 +321,18 @@ public class HealthController {
         String username = (String) session.getAttribute("username");
         if (username == null) username = "Guest";
 
+        // คำนวณอันดับของผู้ใช้
+        List<UserRecord> rankedUsers = Managercontroller.getAllUsersSorted();
+        int rank = 0;
+        for (int i = 0; i < rankedUsers.size(); i++) {
+            if (rankedUsers.get(i).getUsername().equals(username)) {
+                rank = i + 1;
+                break;
+            }
+        }
+        model.addAttribute("userRank", rank > 0 ? rank : "-");
+        model.addAttribute("totalUsers", rankedUsers.size());
+
         UserRecord user = Managercontroller.getUserRecord(username);
         List<String> rawHistory = getWeightHistory(session);
         
@@ -298,7 +349,7 @@ public class HealthController {
             user.setHeight(h != null ? h : 0.0);
             Integer tk = (Integer) session.getAttribute("targetKcal");
             user.setTargetKcal(tk != null ? tk : 2000);
-            user.getWeightHistory().addAll(rawHistory);
+            user.getWeightHistory().addAll(rawHistory); // เพิ่มประวัติจาก session เข้าไปใน user object ชั่วคราว
         }
         
         List<String> history = new ArrayList<>(rawHistory);
@@ -315,25 +366,12 @@ public class HealthController {
 
     @PostMapping("/person/update")
     public String updateProfile(
-            @RequestParam String username,
             @RequestParam(required = false) MultipartFile profileImage,
             @RequestParam(required = false, defaultValue = "false") boolean removeImage,
             HttpSession session,
             RedirectAttributes ra) throws IOException {
         
         String currentUsername = (String) session.getAttribute("username");
-        String newUsername = (username != null) ? username.trim() : "";
-
-        // ตรวจสอบว่าชื่อผู้ใช้ใหม่ซ้ำกับผู้อื่นหรือไม่ (Unique Username Validation)
-        if (!newUsername.equalsIgnoreCase(currentUsername)) {
-            if ("manager".equalsIgnoreCase(newUsername) || Managercontroller.getUserRecord(newUsername) != null) {
-                // ส่งข้อความแจ้งเตือนหากชื่อซ้ำ
-                ra.addFlashAttribute("loginError", "Username '" + newUsername + "' is already taken.");
-                return "redirect:/person";
-            }
-        }
-
-        session.setAttribute("username", newUsername);
 
         if (removeImage) {
             session.removeAttribute("userImage");
@@ -342,10 +380,12 @@ public class HealthController {
             String base64Image = Base64.getEncoder().encodeToString(bytes);
             session.setAttribute("userImage", "data:" + profileImage.getContentType() + ";base64," + base64Image);
         }
+        
+        syncWithManager(session); // บันทึกการเปลี่ยนแปลงชื่อและรูปภาพลงฐานข้อมูลทันที
         return "redirect:/person";
     }
 
-    private void populateFoodModel(HttpSession session, Model model, String searchPreset) {
+    private void populateFoodModel(HttpSession session, Model model, String searchPreset, String sortBy, Integer maxCal) {
         List<String> breakfastItems = getMealItems(session, "breakfast");
         List<String> lunchItems = getMealItems(session, "lunch");
         List<String> dinnerItems = getMealItems(session, "dinner");
@@ -365,15 +405,47 @@ public class HealthController {
 
         // เพิ่มระบบค้นหาเมนูอาหารสำเร็จรูป
         Map<String, Integer> presets = getPresetFoods();
-        if (searchPreset != null && !searchPreset.isBlank()) {
+        
+        // 1. กรองตามระดับแคลอรี่ที่ต้องการ (Filter by calorie level)
+        if (maxCal != null && maxCal > 0) {
+            presets = presets.entrySet().stream()
+                    .filter(e -> e.getValue() <= maxCal)
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, 
+                            (v1, v2) -> v1, LinkedHashMap::new));
+        }
+
+        // 2. หากไม่มีคำค้นหาชื่อ และไม่มีการกรองแคลอรี่ ให้แสดงเพียงบางเมนู (6 รายการ)
+        if ((searchPreset == null || searchPreset.isBlank()) && (maxCal == null || maxCal <= 0)) {
+            presets = presets.entrySet().stream()
+                    .limit(0) // จำกัดจำนวนเมนูที่แสดงเมื่อยังไม่มีการค้นหา
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, 
+                            (v1, v2) -> v1, LinkedHashMap::new));
+        } else {
+            // หากมีคำค้นหา ให้กรองตามคำค้นหาทั้งหมด
             String query = searchPreset.toLowerCase();
             presets = presets.entrySet().stream()
                     .filter(e -> e.getKey().toLowerCase().contains(query))
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, 
                             (v1, v2) -> v1, LinkedHashMap::new));
         }
+
+        // ระบบเรียงลำดับแคลอรี่ (น้อยไปมาก / มากไปน้อย)
+        // การเรียงลำดับจะถูกนำไปใช้กับรายการที่ถูกจำกัดหรือกรองแล้ว
+        // หากต้องการให้เรียงลำดับก่อนจำกัด/กรอง ต้องย้ายบล็อกนี้ขึ้นไปก่อน
+        if ("lowCal".equals(sortBy) || "caloriesAsc".equals(sortBy)) {
+            presets = presets.entrySet().stream()
+                    .sorted(Map.Entry.comparingByValue())
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+        } else if ("highCal".equals(sortBy)) {
+            presets = presets.entrySet().stream()
+                    .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+        }
+
         model.addAttribute("presetFoods", presets);
         model.addAttribute("searchPreset", searchPreset);
+        model.addAttribute("sortBy", sortBy);
+        model.addAttribute("maxCal", maxCal);
     }
 
     private void addFoodToSession(HttpSession session, String meal, String foodName, int kcal) {

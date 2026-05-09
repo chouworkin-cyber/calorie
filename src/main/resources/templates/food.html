@@ -313,10 +313,6 @@
             font-weight: 600;
             margin-top: 8px;
         }
-        .preset-grid {
-    display: none;
-
-        }
         .add-button {
     position: absolute;
     bottom: 20px;
@@ -354,6 +350,23 @@
     <h3><center style="color: #b7764a;">Food Tracking</center></h3>
 
     <div class="content">
+        <!-- ระบบค้นหาอาหาร (Food Menu Search) -->
+        <div style="margin-bottom: 20px;">
+            <form action="/food" method="get" style="display: flex; gap: 8px;">
+                <input type="text" name="searchPreset" th:value="${searchPreset}" placeholder="what i eat..." 
+                       style="flex: 2; padding: 12px; border: 1px solid #eeeeee; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-family: inherit; font-size: 0.9rem;">
+                <select name="maxCal" onchange="this.form.submit()" 
+                        style="flex: 1.2; padding: 10px; border: 1px solid #eeeeee; border-radius: 12px; background: white; font-family: inherit; cursor: pointer; color: #5d5d5d; font-size: 0.85rem;">
+                    <option value="">All Calories</option>
+                    <option value="100" th:selected="${maxCal == 100}">&lt; 100 kcal</option>
+                    <option value="200" th:selected="${maxCal == 200}">&lt; 200 kcal</option>
+                    <option value="500" th:selected="${maxCal == 500}">&lt; 500 kcal</option>
+                </select>
+                <button type="submit" style="padding: 10px 20px; background: var(--sut-orange); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-family: inherit; transition: 0.3s;">search</button>
+            </form>
+        </div>
+    
+
         <!-- Breakfast Section -->
         <div class="meal-section" th:classappend="${breakfast != null && breakfast > 0 ? 'completed' : ''}">
             <div class="meal-header">

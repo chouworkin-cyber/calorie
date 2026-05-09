@@ -49,40 +49,6 @@
             padding-bottom: 90px;
         }
 
-        .toolbar,.toolbar2 {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 10px;
-            margin-bottom: 8px;
-        }
-
-        .toolbar input,
-        .toolbar select {
-            width: 100%;
-            padding: 12px;
-            width: 460px;
-            border: 1px solid #ffffff;
-            border-radius: 10px;
-            font-size: 0.95rem;
-            background: #ffffff;
-            color: #4f4f4f;
-            box-sizing: border-box;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.250);
-    ;
-        }
-        .toolbar2 select{
-            display: grid;
-            gap: 0px;
-            margin-bottom: 0px;
-            border: 1px solid #ffffff;
-            border-radius: 0px;
-            padding: 0px;
-            font-size: 0.95rem;
-            background: #ffffff;
-            color: #ffffff;
-            box-sizing: border-box;
-        }
-
         .point-btn {
             background: var(--sut-orange);
             color: #f7f1eb;
@@ -212,26 +178,24 @@
 <h3><center style="color: #b7764a;">Workout Plans</center></h3>
 
     <div class="content">
-        <div class="toolbar">
-            <input class="center" type="text" id="planSearch" placeholder="Search workout plans..."> 
-            </select>
+        <!-- ระบบค้นหาและจัดเรียง (Search & Sort) รูปแบบเดียวกับ Food -->
+        <div style="margin-bottom: 20px;">
+            <form action="/workout" method="get" style="display: flex; gap: 8px;">
+                <input type="text" name="search" th:value="${search}" placeholder="what i move..." 
+                       style="flex: 1.5; padding: 12px; border: 1px solid #eeeeee; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-family: inherit; font-size: 0.9rem;">
+                <select name="level" onchange="this.form.submit()" 
+                        style="flex: 1; padding: 10px; border: 1px solid #eeeeee; border-radius: 12px; background: white; font-family: inherit; cursor: pointer; color: #5d5d5d; font-size: 0.85rem;">
+                    <option value="">All Levels</option>
+                    <option value="Level 1" th:selected="${level == 'Level 1'}">Level 1</option>
+                    <option value="Level 2" th:selected="${level == 'Level 2'}">Level 2</option>
+                    <option value="Level 3" th:selected="${level == 'Level 3'}">Level 3</option>
+                </select>
+                <button type="submit" style="padding: 10px 20px; background: var(--sut-orange); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-family: inherit; transition: 0.3s;">search</button>
+            </form>
         </div>
-        
-        <div class="toolbar2">
-            <select style="color: #ffffff ;background-origin: padding-box; padding-bottom: 0%;" class id="difficultyFilter">
-                <option value="all">All</option>
-                <option value="level 1">Level 1</option>
-                <option value="level 2">Level 2</option>
-                <option value="level 3">Level 3</option>
-            </select>
-        </div>
-        
 
-        <div class="section-card workout-card"
-            th:each="plan : ${workoutPlans}"
-            th:attr="data-level=${#strings.toLowerCase(plan.level)},data-search=${#strings.toLowerCase(plan.title + ' ' + plan.description + ' ' + #strings.listJoin(plan.exercises, ' '))}">
+        <div class="section-card workout-card" th:each="plan : ${workoutPlans}">
             <div class="section-title">Workout Plan</div>
-
             <div class="workout-top">
                 <div>
                     <div class="level-badge" th:text="${plan.level}">Level 1</div>

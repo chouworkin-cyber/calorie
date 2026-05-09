@@ -26,7 +26,7 @@
 
         .app-screen { 
             width: 550px; 
-            height: 650px; 
+            height: 550px; 
             background: white; 
             position: relative;
             overflow: hidden;
@@ -166,13 +166,10 @@
 <body>
 
 <div class="app-screen">
-    <div class="header">
-        <span style="font-weight: 800; font-size: 1.6rem; color: white; letter-spacing: 1px;">SUT</span>
-    </div>
 
     <div class="content">
-        <div class="logo-circle">
-            <span style="font-weight: 800; font-size: 1.5rem; color: var(--sut-orange);">calorie counter</span>
+        <div class="logo">
+            <span style="font-weight: 800; font-size: 1.5rem; color: var(--sut-orange);">CALORIES COUNTER</span>
         </div>
 
         <div class="tab-buttons">
@@ -200,7 +197,8 @@
             this.password = password;
         }
         authenticate() {
-            return this.username.length > 0 && this.password.length > 0;
+            // บังคับรหัสผ่านไม่ต่ำกว่า 8 ตัวตามกฎของระบบ
+            return this.username.length > 0 && this.password.length >= 8;
         }
     }
 
@@ -268,16 +266,23 @@
             if (account.authenticate()) {
                 const formData = new URLSearchParams();
                 formData.append('username', u);
+                formData.append('password', p); // ส่งรหัสผ่านไปด้วยเพื่อใช้ตรวจสอบและตั้งค่าเริ่มต้น
 
                 fetch('/login', {
                     method: 'POST',
                     body: formData
-                }).then(() => {
-                    alert("hello " + account.username + " welcome to the system!");
-                    window.location.href = account.getRedirectPath();
+                }).then(response => {
+                    if (response.redirected && response.url.includes('login')) {
+                        // กรณีเซิร์ฟเวอร์ปฏิเสธ (เช่น รหัสผ่านผิดสำหรับผู้ใช้เดิม)
+                        alert("Invalid credentials or password too short.");
+                        location.reload();
+                    } else {
+                        alert("hello " + account.username + " welcome to the system!");
+                        window.location.href = account.getRedirectPath();
+                    }
                 });
             } else {
-                alert("Invalid " + this.currentRole + " credentials.");
+                alert("Invalid " + this.currentRole + " credentials. (Password must be 8+ chars)");
             }
         }
     };

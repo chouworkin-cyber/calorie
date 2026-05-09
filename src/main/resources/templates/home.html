@@ -30,7 +30,7 @@
             overflow: hidden; 
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             display: flex;
-            border-radius: 20px; 
+            border-radius: 20px;
             flex-direction: column;
         }
 
@@ -159,7 +159,7 @@
         <a href="/person" class="profile-area">
             <div class="profile-pic">
                 <img th:if="${session.userImage != null}" th:src="${session.userImage}" />
-                <span th:if="${session.userImage == null}" style="color: white; font-size: 30px;">👤</span>
+                <span th:if="${session.userImage == null}" style="color: white; font-size: 30px;">P</span>
             </div>
             <div>
                 <b th:text="${session.username != null ? session.username : 'Username'}">Username</b>

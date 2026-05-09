@@ -29,7 +29,7 @@
             overflow: hidden; 
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             display: flex;
-            border-radius: 20px; 
+            border-radius: 20px;
             flex-direction: column;
         }
 
@@ -64,21 +64,40 @@
             margin-bottom: 20px;
             width: 100%;
         }
-        .stat-box { 
-            background: white; 
-            border: 1px solid #eeeeee; 
-            padding: 12px; 
-            border-radius: 10px; 
-            text-align: center; 
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.250); 
+        .stat-box { background: white; border: 1px solid #eeeeee; padding: 12px; border-radius: 10px; text-align: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.250); }
+        .stat-box b { font-size: 1.1rem; display: block; color: var(--sut-dark); }
+        .stat-box span { font-size: 0.75rem; color: #888; }
+
+        .rank-summary {
+            background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
+            border: 1px solid #88888829;
+            border-radius: 16px;
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            width: 92%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.250);
         }
-        .stat-box b { 
-            font-size: 1.1rem; 
-            display: block; 
-            color: var(--sut-dark); }
-        .stat-box span { 
-            font-size: 0.75rem; 
-            color: #888; }
+        .rank-circle {
+            background: #ffffff;
+            color: var(--sut-orange);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 2.2rem;
+            flex-shrink: 0;
+
+        }
+        .rank-details { text-align: left; }
+        .rank-title { color: var(--sut-orange); font-weight: 600; font-size: 0.9rem; line-height: 1.2; }
+        .rank-subtext { color: #888; font-size: 0.7rem; margin-top: 2px; }
 
     
         .section-title { color: var(--sut-orange); font-weight: bold; margin: 15px 0 10px; font-size: 0.9rem; align-self: flex-start; }
@@ -137,16 +156,24 @@
     </div>
 
     <div class="content">
-        <!-- Dashboard Style Stats -->
+        <!-- Summary Stats -->
         <div class="stats-grid">
             <div class="stat-box">
                 <b th:text="${user.points} + ' pts'">0 pts</b>
-                <span th:text="${'“' + user.motivationMessage + '”'}" style="color: var(--sut-orange); font-size: 0.7rem; font-weight: 600; display: block; margin-top: 2px;">“Keep going!”</span>
-                <span>Total Points</span>
+                <span>points</span>
             </div>
             <div class="stat-box">
                 <b th:text="${user.weight} + ' kg'">0 kg</b>
                 <span>Current Weight</span>
+            </div>
+        </div>
+
+
+        <div class="rank-summary">
+            <div class="rank-circle" th:text="${userRank}">1</div>
+            <div class="rank-details">
+                <div class="rank-title" th:text="${'Citizen: ' + user.motivationMessage}">Citizen</div>
+                <div class="rank-subtext">Rank <span th:text="${userRank}">1</span> of <span th:text="${totalUsers}">10</span> users</div>
             </div>
         </div>
 
@@ -169,8 +196,8 @@
         <input type="hidden" name="removeImage" id="remove-image-input" value="false">
 
         <div class="input-group">
-            <label>Your Display Name</label>
-            <input type="text" name="username" th:value="${user.username}" placeholder="Enter your name" required>
+            <label>Display Name</label>
+            <input type="text" th:value="${user.username}" readonly style="background-color: #f0f0f0; color: #888; cursor: not-allowed;">
         </div>
 
         <div class="section-title">Weight History</div>
