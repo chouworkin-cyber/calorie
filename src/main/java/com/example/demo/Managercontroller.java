@@ -58,7 +58,7 @@ public class Managercontroller {
             foodDB.putAll((Map<Integer, FoodItem>) allData.get("food"));
             workoutDB.putAll((Map<Integer, ManagedWorkoutPlan>) allData.get("workout"));
             userDB.putAll((Map<String, UserRecord>) allData.get("user"));
-            userDB.remove("manager"); // ล้างชื่อ manager ออกหากมีค้างอยู่ในไฟล์ข้อมูลเดิม
+            userDB.remove("manager");
             foodIdSeq.set((Integer) allData.get("foodSeq"));
             workoutIdSeq.set((Integer) allData.get("workoutSeq"));
             userIdSeq.set((Integer) allData.get("userSeq"));
@@ -88,9 +88,7 @@ public class Managercontroller {
 
         List<ManagedWorkoutPlan> recentWorkouts = new ArrayList<>(workoutDB.values());
 
-        // เพิ่มระบบค้นหาผู้ใช้ในหน้าสรุปผล (Dashboard)
         List<UserRecord> users = new ArrayList<>(userDB.values());
-        // จัดลำดับตามคะแนนจากมากไปน้อยเป็นค่าเริ่มต้น
         users.sort(Comparator.comparingInt(UserRecord::getPoints).reversed());
 
         if (searchUser != null && !searchUser.isBlank()) {
@@ -118,23 +116,19 @@ public class Managercontroller {
         
         List<FoodItem> items = new ArrayList<>(foodDB.values());
 
-        // ค้นหาแยกตามชื่อ
         if (searchName != null && !searchName.isBlank()) {
             items = items.stream()
                     .filter(i -> i.getName().toLowerCase().contains(searchName.toLowerCase()))
                     .collect(Collectors.toList());
         }
-        // ค้นหาแยกตามหมวดหมู่
         if (searchCategory != null && !searchCategory.isBlank()) {
             items = items.stream()
                     .filter(i -> i.getCategory().toLowerCase().contains(searchCategory.toLowerCase()))
                     .collect(Collectors.toList());
         }
 
-        // ระบบเรียงลำดับข้อมูลอาหาร
-        // กำหนดให้เป็น Default Sort เมื่อเปิดหน้าเว็บ
         if (sortBy == null || "calories".equals(sortBy) || "caloriesAsc".equals(sortBy) || "lowCal".equals(sortBy)) {
-            items.sort(Comparator.comparingInt(FoodItem::getCalories)); // เรียงจากน้อยไปมาก (Low to High)
+            items.sort(Comparator.comparingInt(FoodItem::getCalories));
         } else if ("caloriesDesc".equals(sortBy)) {
             items.sort(Comparator.comparingInt(FoodItem::getCalories).reversed());
         } else if ("name".equals(sortBy)) {
@@ -244,7 +238,7 @@ public class Managercontroller {
             int count = 0;
             while ((line = reader.readLine()) != null) {
                 String[] d = line.split(",");
-                if (d.length >= 3) { // ตรวจสอบข้อมูลพื้นฐาน (ชื่อ, แคลอรี่, หมวดหมู่)
+                if (d.length >= 3) {
                     int id = foodIdSeq.getAndIncrement();
                     String name = d[0].trim();
                     int calories = Integer.parseInt(d[1].trim());
@@ -281,20 +275,17 @@ public class Managercontroller {
         
         List<ManagedWorkoutPlan> plans = new ArrayList<>(workoutDB.values());
 
-        // ค้นหาแยกตามชื่อท่า
         if (searchTitle != null && !searchTitle.isBlank()) {
             plans = plans.stream()
                     .filter(p -> p.getTitle().toLowerCase().contains(searchTitle.toLowerCase()))
                     .collect(Collectors.toList());
         }
-        // ค้นหาแยกตามระดับความยาก
         if (searchLevel != null && !searchLevel.isBlank()) {
             plans = plans.stream()
                     .filter(p -> p.getLevel().toLowerCase().contains(searchLevel.toLowerCase()))
                     .collect(Collectors.toList());
         }
 
-        // เรียงลำดับตามแต้ม, เวลา หรือชื่อ
         if ("points".equals(sortBy)) {
             plans.sort(Comparator.comparingInt(ManagedWorkoutPlan::getPoints));
         } else if ("duration".equals(sortBy)) {
@@ -392,7 +383,7 @@ public class Managercontroller {
             int count = 0;
             while ((line = reader.readLine()) != null) {
                 String[] d = line.split(",");
-                if (d.length >= 6) { // ชื่อท่า, คำอธิบาย, ระดับ, แต้ม, เวลา, รายการท่า(แยกด้วย |)
+                if (d.length >= 6) {
                     int id = workoutIdSeq.getAndIncrement();
                     String title = d[0].trim();
                     String description = d[1].trim();
@@ -432,21 +423,17 @@ public class Managercontroller {
         
         List<UserRecord> users = new ArrayList<>(userDB.values());
 
-        // ค้นหาแยกตามชื่อผู้ใช้
         if (searchUsername != null && !searchUsername.isBlank()) {
             users = users.stream()
                     .filter(u -> u.getUsername().toLowerCase().contains(searchUsername.toLowerCase()))
                     .collect(Collectors.toList());
         }
-        // ค้นหาแยกตามสถานะ BMI
         if (searchBmi != null && !searchBmi.isBlank()) {
             users = users.stream()
                     .filter(u -> u.getBmiStatus() != null && u.getBmiStatus().toLowerCase().contains(searchBmi.toLowerCase()))
                     .collect(Collectors.toList());
         }
 
-        // เรียงลำดับผู้ใช้ (เช่น แต้มมากที่สุด หรือเรียงตามชื่อ)
-        // กำหนดให้การเรียงคะแนนจากมากไปน้อยเป็นค่าเริ่มต้น (Default Sort)
         if (sortBy == null || sortBy.isBlank() || "points".equals(sortBy) || "pointsDesc".equals(sortBy)) {
             users.sort(Comparator.comparingInt(UserRecord::getPoints).reversed());
         } else if ("pointsAsc".equals(sortBy)) {
@@ -504,14 +491,12 @@ public class Managercontroller {
                             List<String> bItems, List<String> lItems, List<String> dItems,
                             List<String> history, Map<String, Boolean> workouts) {
 
-        // ไม่บันทึกผู้ใช้งานที่ใช้ชื่อ "manager" หรือ "admin" ลงในฐานข้อมูลกลาง เพื่อไม่ให้ปรากฏในส่วนจัดการผู้ใช้
-        // เพิ่มการยกเว้น admin1 ตามที่ตั้งค่าไว้ในหน้า login
         if (username == null || username.isBlank() || 
             "manager".equalsIgnoreCase(username) || "admin1".equalsIgnoreCase(username)) {
             return;
         }
 
-        UserRecord record = userDB.computeIfAbsent(username,
+        UserRecord record = userDB.computeIfAbsent(username, 
                 k -> new UserRecord(userIdSeq.getAndIncrement(), k));
         record.syncFromSession(username, password, profileImage, targetKcal, weight, goalWeight, height, bmiStatus, points, totalEaten,
                                bTotal, lTotal, dTotal, bItems, lItems, dItems, history, workouts);
@@ -522,10 +507,10 @@ public class Managercontroller {
         if (oldName == null || newName == null || oldName.equals(newName)) return;
         if ("manager".equalsIgnoreCase(newName) || newName.isBlank()) return;
         
-        UserRecord record = userDB.remove(oldName); // ดึงข้อมูลเดิมออกมาจากชื่อเก่า
+        UserRecord record = userDB.remove(oldName);
         if (record != null) {
             record.setName(newName);
-            userDB.put(newName, record); // บันทึกเข้าไปใหม่ด้วยชื่อใหม่
+            userDB.put(newName, record);
             saveData();
         }
     }
@@ -551,10 +536,8 @@ public class Managercontroller {
                 .collect(Collectors.toList());
     }
 
-    // ประยุกต์ใช้ File Input
     private static void seedDefaultFood() {
         try {
-            // อ่านข้อมูลจากไฟล์ food_data.txt ใน src/main/resources
             InputStream is = new ClassPathResource("food_data.txt").getInputStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(is));
             String line;
@@ -573,7 +556,6 @@ public class Managercontroller {
         } catch (Exception e) {
             System.err.println("Could not load food data from file, seeding default settings.");
             
-            // กำหนดรายการอาหารมาตรฐาน (Settings) เป็นค่าเริ่มต้นของระบบ
             Object[][] defaultFoods = {
                 {"rice", 160, "Carbohydrate", 3.0, 35.0, 0.0},
                 {"chicken breast", 120, "Protein", 25.0, 0.0, 2.0},
@@ -591,7 +573,7 @@ public class Managercontroller {
                 int id = foodIdSeq.getAndIncrement();
                 foodDB.put(id, new FoodItem(id, (String)f[0], (int)f[1], (String)f[2], (double)f[3], (double)f[4], (double)f[5]));
             }
-            saveData(); // บันทึกค่าเซทติ้งลงไฟล์ถาวรทันที
+            saveData();
         }
     }
 

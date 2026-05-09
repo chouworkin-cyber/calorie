@@ -2,6 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=0.9">
     <title>SUT Health - Edit Profile</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -22,14 +23,14 @@
         }
         
         .app-screen { 
-            width: 550px; 
-            height: 650px; 
+            width: 580px; 
+            height: 900px; 
             background: white; 
             position: relative; 
             overflow: hidden; 
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             display: flex;
-            border-radius: 20px;
+            border-radius: 5px;
             flex-direction: column;
         }
 
@@ -172,7 +173,7 @@
         <div class="rank-summary">
             <div class="rank-circle" th:text="${userRank}">1</div>
             <div class="rank-details">
-                <div class="rank-title" th:text="${'Citizen: ' + user.motivationMessage}">Citizen</div>
+                <div class="rank-title" th:text="${' ' + user.motivationMessage}"> </div>
                 <div class="rank-subtext">Rank <span th:text="${userRank}">1</span> of <span th:text="${totalUsers}">10</span> users</div>
             </div>
         </div>

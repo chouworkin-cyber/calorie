@@ -57,7 +57,6 @@ class DietaryRecommendation extends HealthSolution {
     public Map<String, Double> getRecommendedMacros() {
         double tdee = getTDEE();
         Map<String, Double> macros = new HashMap<>();
-        // สูตรมาตรฐาน: Protein 30%, Carbs 40%, Fat 30%
         macros.put("Protein(g)", (tdee * 0.30) / 4);
         macros.put("Carbs(g)", (tdee * 0.40) / 4);
         macros.put("Fat(g)", (tdee * 0.30) / 9);

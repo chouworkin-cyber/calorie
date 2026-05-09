@@ -31,7 +31,7 @@
             position: relative;
             overflow: hidden;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            border-radius: 20px; 
+            border-radius: 5px; 
             display: flex;
             flex-direction: column;
         }
@@ -197,7 +197,6 @@
             this.password = password;
         }
         authenticate() {
-            // บังคับรหัสผ่านไม่ต่ำกว่า 8 ตัวตามกฎของระบบ
             return this.username.length > 0 && this.password.length >= 8;
         }
     }
@@ -266,14 +265,13 @@
             if (account.authenticate()) {
                 const formData = new URLSearchParams();
                 formData.append('username', u);
-                formData.append('password', p); // ส่งรหัสผ่านไปด้วยเพื่อใช้ตรวจสอบและตั้งค่าเริ่มต้น
+                formData.append('password', p);
 
                 fetch('/login', {
                     method: 'POST',
                     body: formData
                 }).then(response => {
                     if (response.redirected && response.url.includes('login')) {
-                        // กรณีเซิร์ฟเวอร์ปฏิเสธ (เช่น รหัสผ่านผิดสำหรับผู้ใช้เดิม)
                         alert("Invalid credentials or password too short.");
                         location.reload();
                     } else {

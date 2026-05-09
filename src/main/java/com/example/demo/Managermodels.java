@@ -165,7 +165,7 @@ class ManagedWorkoutPlan extends WorkoutPlan {
         super(id, name, level, points, description, exercises);
         this.durationMinutes = durationMinutes;
         this.completed = false;
-        this.key = String.valueOf(id); // ใช้ ID เป็น Key เพื่อให้แยกจากกันแม้ Level จะซ้ำ
+        this.key = String.valueOf(id);
     }
 
     public int     getDurationMinutes() { return durationMinutes; }
