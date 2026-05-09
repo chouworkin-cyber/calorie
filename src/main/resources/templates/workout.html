@@ -182,9 +182,9 @@
     <div class="content">
         <div style="margin-bottom: 20px;">
             <form action="/workout" method="get" style="display: flex; gap: 8px;">
-                <input type="text" name="search" th:value="${search}" placeholder="what i move..." 
+                <input type="text" id="planSearch" name="search" th:value="${search}" placeholder="Search workout plans..." 
                        style="flex: 1.5; padding: 12px; border: 1px solid #eeeeee; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-family: inherit; font-size: 0.9rem;">
-                <select name="level" onchange="this.form.submit()" 
+                <select id="difficultyFilter" name="level" onchange="this.form.submit()" 
                         style="flex: 1; padding: 10px; border: 1px solid #eeeeee; border-radius: 12px; background: white; font-family: inherit; cursor: pointer; color: #5d5d5d; font-size: 0.85rem;">
                     <option value="">All Levels</option>
                     <option value="Level 1" th:selected="${level == 'Level 1'}">Level 1</option>
@@ -195,7 +195,9 @@
             </form>
         </div>
 
-        <div class="section-card workout-card" th:each="plan : ${workoutPlans}">
+        <div class="section-card workout-card" th:each="plan : ${workoutPlans}"
+             th:data-level="${plan.level}"
+             th:data-search="${#strings.toLowerCase(plan.title + ' ' + (plan.exercises != null ? #strings.listJoin(plan.exercises, ' ') : ''))}">
             <div class="section-title">Workout Plan</div>
             <div class="workout-top">
                 <div>
@@ -242,7 +244,7 @@
             const searchText = card.dataset.search || '';
 
             const matchesSearch = searchText.includes(searchValue);
-            const matchesDifficulty = difficultyValue === 'all' || level === difficultyValue;
+            const matchesDifficulty = difficultyValue === '' || level === difficultyValue;
 
             card.style.display = matchesSearch && matchesDifficulty ? 'block' : 'none';
         });
