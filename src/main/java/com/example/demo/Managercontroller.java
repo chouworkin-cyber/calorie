@@ -515,8 +515,9 @@ public class Managercontroller {
     }
 
     
-    public static void syncUser(String username, String password, String profileImage, Integer targetKcal, Double weight, Double goalWeight, Double height,
-                            String bmiStatus, Integer points, Integer totalEaten,
+    public static void syncUser(String username, String password, String profileImage, Integer targetKcal, 
+                            Double weight, Double goalWeight, Double height, Integer age, String gender, Double activity,
+                            String bmiStatus, Boolean hasSetup, Integer points, Integer totalEaten,
                             Integer bTotal, Integer lTotal, Integer dTotal,
                             List<String> bItems, List<String> lItems, List<String> dItems,
                             List<String> history, List<String> foodLog, List<String> workoutLog, List<String> dailyKcalLog, Map<String, Boolean> workouts) {
@@ -528,8 +529,8 @@ public class Managercontroller {
 
         UserRecord record = userDB.computeIfAbsent(username, 
                 k -> new UserRecord(userIdSeq.getAndIncrement(), k));
-        record.syncFromSession(username, password, profileImage, targetKcal, weight, goalWeight, height, bmiStatus, points, totalEaten,
-                               bTotal, lTotal, dTotal, bItems, lItems, dItems, history, foodLog, workoutLog, dailyKcalLog, workouts);
+        record.syncFromSession(username, password, profileImage, targetKcal, weight, goalWeight, height, age, gender, activity, bmiStatus, 
+                               hasSetup, points, totalEaten, bTotal, lTotal, dTotal, bItems, lItems, dItems, history, foodLog, workoutLog, dailyKcalLog, workouts);
         saveData();
     }
 

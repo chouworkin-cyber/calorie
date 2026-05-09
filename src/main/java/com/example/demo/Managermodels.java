@@ -216,17 +216,25 @@ class RegisteredUser extends NamedItem {
 class HealthUser extends RegisteredUser {
     protected double weight;
     protected double height;
+    protected int    age;
+    protected String gender;
+    protected double activity;
     protected int    targetKcal;
     protected double goalWeight;
     protected String bmiStatus; 
+    protected boolean hasSetup;
 
     public HealthUser(int id, String username) {
         super(id, username);
         this.weight = 0;
         this.height = 0;
+        this.age = 0;
+        this.gender = "male";
+        this.activity = 1.2;
         this.targetKcal = 2000;
         this.goalWeight = 0;
         this.bmiStatus = null;
+        this.hasSetup = false;
     }
 
     public double getWeight()     { return weight; }
@@ -234,12 +242,20 @@ class HealthUser extends RegisteredUser {
     public int    getTargetKcal() { return targetKcal; }
     public double getGoalWeight() { return goalWeight; }
     public String getBmiStatus()  { return bmiStatus; }
+    public int    getAge()        { return age; }
+    public String getGender()     { return gender; }
+    public double getActivity()    { return activity; }
+    public boolean isHasSetup()   { return hasSetup; }
 
     public void setWeight(double w)      { this.weight = w; }
     public void setHeight(double h)      { this.height = h; }
     public void setGoalWeight(double g)  { this.goalWeight = g; }
     public void setTargetKcal(int k)     { this.targetKcal = k; }
     public void setBmiStatus(String s)   { this.bmiStatus = s; }
+    public void setAge(int a)            { this.age = a; }
+    public void setGender(String g)      { this.gender = g; }
+    public void setActivity(double act)  { this.activity = act; }
+    public void setHasSetup(boolean s)   { this.hasSetup = s; }
 
     public double getBmi() {
         if (height <= 0 || weight <= 0) return 0;
@@ -285,7 +301,8 @@ class UserRecord extends HealthUser {
     public Map<String, Boolean> getClaimedWorkouts() { return claimedWorkouts; }
 
     public void syncFromSession(String username, String password, String profileImage, Integer targetKcal, Double weight, Double goalWeight,
-                                Double height, String bmiStatus, Integer points, Integer totalEaten,
+                                Double height, Integer age, String gender, Double activity, String bmiStatus, 
+                                Boolean hasSetup, Integer points, Integer totalEaten,
                                 Integer bTotal, Integer lTotal, Integer dTotal,
                                 List<String> bItems, List<String> lItems, List<String> dItems,
                                 List<String> history, List<String> foodLog, List<String> workoutLog, List<String> dailyKcalLog, Map<String, Boolean> workouts) {
@@ -296,7 +313,11 @@ class UserRecord extends HealthUser {
         if (weight     != null) this.weight     = weight;
         if (goalWeight != null) this.goalWeight = goalWeight;
         if (height     != null) this.height     = height;
+        if (age        != null) this.age        = age;
+        if (gender     != null) this.gender     = gender;
+        if (activity   != null) this.activity   = activity;
         if (bmiStatus  != null) this.bmiStatus  = bmiStatus;
+        if (hasSetup   != null) this.hasSetup   = hasSetup;
         if (points     != null) this.points     = points;
         if (totalEaten != null) this.totalEaten = totalEaten;
         

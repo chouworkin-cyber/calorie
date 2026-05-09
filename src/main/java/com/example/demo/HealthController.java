@@ -64,7 +64,11 @@ public class HealthController {
             session.setAttribute("userWeight", existingUser.getWeight());
             session.setAttribute("goalWeight", existingUser.getGoalWeight());
             session.setAttribute("userHeight", existingUser.getHeight());
+            session.setAttribute("userAge", existingUser.getAge());
+            session.setAttribute("userGender", existingUser.getGender());
+            session.setAttribute("userActivity", existingUser.getActivity());
             session.setAttribute("userStatus", existingUser.getBmiStatus());
+            session.setAttribute("hasSetup", existingUser.isHasSetup());
             session.setAttribute("points", existingUser.getPoints());
             session.setAttribute("breakfastTotal", existingUser.getBreakfastTotal());
             session.setAttribute("lunchTotal", existingUser.getLunchTotal());
@@ -85,7 +89,11 @@ public class HealthController {
             session.setAttribute("userWeight", 0.0);
             session.setAttribute("goalWeight", 0.0);
             session.setAttribute("userHeight", 0.0);
+            session.setAttribute("userAge", 0);
+            session.setAttribute("userGender", "male");
+            session.setAttribute("userActivity", 1.2);
             session.setAttribute("userStatus", "normal");
+            session.setAttribute("hasSetup", false);
             session.setAttribute("breakfastTotal", 0);
             session.setAttribute("lunchTotal", 0);
             session.setAttribute("dinnerTotal", 0);
@@ -118,6 +126,13 @@ public class HealthController {
     @GetMapping("/calculate")
     public String getCalculatePage(HttpSession session, Model model) {
         Integer targetKcal = (Integer) session.getAttribute("targetKcal");
+        
+        // ดึงข้อมูลร่างกายจาก Session มากรอกในฟอร์มให้อัตโนมัติ (Persistence)
+        model.addAttribute("weight", session.getAttribute("userWeight"));
+        model.addAttribute("height", session.getAttribute("userHeight"));
+        model.addAttribute("age", session.getAttribute("userAge"));
+        model.addAttribute("gender", session.getAttribute("userGender"));
+        model.addAttribute("activity", session.getAttribute("userActivity"));
         model.addAttribute("calories", targetKcal);
         return "calculate";
     }
@@ -138,6 +153,9 @@ public class HealthController {
         session.setAttribute("targetKcal", targetKcal);
         session.setAttribute("userWeight", weight);
         session.setAttribute("userHeight", height);
+        session.setAttribute("userAge", age);
+        session.setAttribute("userGender", gender);
+        session.setAttribute("userActivity", activity);
         session.setAttribute("userStatus", userHealth.getStatus());
 
         List<String> history = getWeightHistory(session);
@@ -595,7 +613,11 @@ public class HealthController {
         Double weight = (Double) session.getAttribute("userWeight");
         Double goalWeight = (Double) session.getAttribute("goalWeight");
         Double height = (Double) session.getAttribute("userHeight");
+        Integer age = (Integer) session.getAttribute("userAge");
+        String gender = (String) session.getAttribute("userGender");
+        Double activity = (Double) session.getAttribute("userActivity");
         String bmiStatus = (String) session.getAttribute("userStatus");
+        Boolean hasSetup = (Boolean) session.getAttribute("hasSetup");
         Integer points = (Integer) session.getAttribute("points");
         int totalEaten = getMealTotal(session, "breakfast") + getMealTotal(session, "lunch") + getMealTotal(session, "dinner");
         
@@ -631,7 +653,8 @@ public class HealthController {
             workouts.put(p.getKey(), isWorkoutClaimed(session, p.getKey()));
         });
 
-        Managercontroller.syncUser(username, password, userImage, targetKcal, weight, goalWeight, height, bmiStatus, points, totalEaten,
+        Managercontroller.syncUser(username, password, userImage, targetKcal, weight, goalWeight, height, age, gender, activity, bmiStatus, 
+                                   hasSetup, points, totalEaten,
                                    bTotal, lTotal, dTotal, bItems, lItems, dItems, history, foodLog, workoutLog, dailyKcalLog, workouts);
     }
 }
