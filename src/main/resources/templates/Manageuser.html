@@ -32,7 +32,7 @@
         .btn-logout { background: transparent; border: 1px solid #333; color: #666; padding: 7px 16px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; text-decoration: none; }
         .content { padding: 32px; flex: 1; }
 
-        .mini-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px; }
+        .mini-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 24px; }
         .mini-card { background: #ffffff; border: 1px solid rgba(0,0,0,0.05); border-radius: 12px; padding: 16px 20px; box-shadow: 0 4px 15px rgba(139, 69, 19, 0.05); }
         .mini-label { font-size: 0.72rem; color: #999; text-transform: uppercase; margin-bottom: 6px; }
         .mini-value { font-size: 1.6rem; font-weight: 700; color: var(--text-dark); }
@@ -96,7 +96,6 @@
         <div class="mini-stats">
             <div class="mini-card"><div class="mini-label">Total Users</div><div class="mini-value" th:text="${#lists.size(allUsers)}">0</div></div>
             <div class="mini-card"><div class="mini-label">Avg Points</div><div class="mini-value orange" th:text="${avgPoints ?: 0}">0</div></div>
-            <div class="mini-card"><div class="mini-label">Total Points Claimed</div><div class="mini-value orange" th:text="${totalPointsClaimed ?: 0}">0</div></div>
         </div>
 
         <div class="card">

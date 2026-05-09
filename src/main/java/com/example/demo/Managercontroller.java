@@ -87,7 +87,6 @@ public class Managercontroller {
         model.addAttribute("totalUsers",        userDB.size());
         model.addAttribute("totalFoodItems",    foodDB.size());
         model.addAttribute("totalWorkouts",     workoutDB.size());
-        model.addAttribute("totalPointsClaimed", totalPoints);
         model.addAttribute("avgPoints",         avgPts);
 
         List<FoodItem> recentFoods = new ArrayList<>(foodDB.values());
