@@ -39,24 +39,14 @@ public class HealthController {
         }
 
         UserRecord existingUser = Managercontroller.getUserRecord(username);
-
-        // 1. ตรวจสอบความถูกต้องก่อนเริ่มเซสชันใหม่
-        if (existingUser != null && !password.equals(existingUser.getPassword())) {
-            ra.addFlashAttribute("loginError", "Invalid password for existing user");
-            return "redirect:/login";
-        }
-
-        // 2. ล้างข้อมูลเก่าในเซสชันทั้งหมดเพื่อความปลอดภัยและความเป็นส่วนตัว (Data Separation)
-        java.util.Enumeration<String> attrs = session.getAttributeNames();
-        while (attrs.hasMoreElements()) {
-            session.removeAttribute(attrs.nextElement());
-        }
-
-        // 3. ตั้งค่าข้อมูลผู้ใช้ลงในเซสชันใหม่
-        session.setAttribute("username", username);
-        session.setAttribute("password", password);
-
         if (existingUser != null) {
+            if (!password.equals(existingUser.getPassword())) {
+                ra.addFlashAttribute("loginError", "Invalid password for existing user");
+                return "redirect:/login";
+            }
+            session.setAttribute("username", username);
+        
+            session.setAttribute("password", existingUser.getPassword());
             session.setAttribute("userImage", existingUser.getProfileImage());
             session.setAttribute("targetKcal", existingUser.getTargetKcal());
             session.setAttribute("userWeight", existingUser.getWeight());
@@ -77,11 +67,8 @@ public class HealthController {
             });
         } else {
             // กำหนดค่าเริ่มต้นสำหรับผู้ใช้ใหม่
-            session.setAttribute("userImage", null);
-            session.setAttribute("userWeight", 0.0);
-            session.setAttribute("goalWeight", 0.0);
-            session.setAttribute("userHeight", 0.0);
-            session.setAttribute("userStatus", "normal");
+            session.setAttribute("username", username);
+            session.setAttribute("password", password);
             session.setAttribute("breakfastTotal", 0);
             session.setAttribute("lunchTotal", 0);
             session.setAttribute("dinnerTotal", 0);
@@ -99,12 +86,6 @@ public class HealthController {
 
         syncWithManager(session); 
         return "redirect:/home";
-    }
-
-    @GetMapping("/logout")
-    public String logout(HttpSession session) {
-        session.invalidate(); // ทำลายเซสชันทิ้งทั้งหมด
-        return "redirect:/login";
     }
     
     @GetMapping("/calculate")
@@ -350,11 +331,6 @@ public class HealthController {
                 ra.addFlashAttribute("loginError", "Username '" + newUsername + "' is already taken.");
                 return "redirect:/person";
             }
-        }
-
-        // ย้ายข้อมูลในฐานข้อมูลหลักหากมีการเปลี่ยนชื่อ (Maintain One Profile per User)
-        if (!newUsername.equals(currentUsername)) {
-            Managercontroller.renameUser(currentUsername, newUsername);
         }
 
         session.setAttribute("username", newUsername);

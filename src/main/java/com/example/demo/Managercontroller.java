@@ -499,18 +499,6 @@ public class Managercontroller {
         saveData();
     }
 
-    public static void renameUser(String oldName, String newName) {
-        if (oldName == null || newName == null || oldName.equals(newName)) return;
-        if ("manager".equalsIgnoreCase(newName) || newName.isBlank()) return;
-        
-        UserRecord record = userDB.remove(oldName); // ดึงข้อมูลเดิมออกมา
-        if (record != null) {
-            record.setName(newName);
-            userDB.put(newName, record); // บันทึกเข้าที่ใหม่ด้วยชื่อใหม่
-            saveData();
-        }
-    }
-
     public static UserRecord getUserRecord(String username) {
         return userDB.get(username);
     }
