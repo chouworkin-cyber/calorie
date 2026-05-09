@@ -519,7 +519,7 @@ public class Managercontroller {
                             String bmiStatus, Integer points, Integer totalEaten,
                             Integer bTotal, Integer lTotal, Integer dTotal,
                             List<String> bItems, List<String> lItems, List<String> dItems,
-                            List<String> history, List<String> workoutLog, Map<String, Boolean> workouts) {
+                            List<String> history, List<String> foodLog, List<String> workoutLog, List<String> dailyKcalLog, Map<String, Boolean> workouts) {
 
         if (username == null || username.isBlank() || 
             "manager".equalsIgnoreCase(username) || "admin1".equalsIgnoreCase(username)) {
@@ -529,7 +529,7 @@ public class Managercontroller {
         UserRecord record = userDB.computeIfAbsent(username, 
                 k -> new UserRecord(userIdSeq.getAndIncrement(), k));
         record.syncFromSession(username, password, profileImage, targetKcal, weight, goalWeight, height, bmiStatus, points, totalEaten,
-                               bTotal, lTotal, dTotal, bItems, lItems, dItems, history, workoutLog, workouts);
+                               bTotal, lTotal, dTotal, bItems, lItems, dItems, history, foodLog, workoutLog, dailyKcalLog, workouts);
         saveData();
     }
 

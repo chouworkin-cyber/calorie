@@ -73,7 +73,9 @@ public class HealthController {
             session.setAttribute("lunchItems", new ArrayList<>(existingUser.getLunchItems()));
             session.setAttribute("dinnerItems", new ArrayList<>(existingUser.getDinnerItems()));
             session.setAttribute("weightHistory", new ArrayList<>(existingUser.getWeightHistory()));
+            session.setAttribute("foodLog", new ArrayList<>(existingUser.getFoodLog()));
             session.setAttribute("workoutLog", new ArrayList<>(existingUser.getWorkoutLog()));
+            session.setAttribute("dailyKcalLog", new ArrayList<>(existingUser.getDailyKcalLog()));
             
             existingUser.getClaimedWorkouts().forEach((key, val) -> {
                 session.setAttribute(key + "Claimed", val);
@@ -92,7 +94,9 @@ public class HealthController {
             session.setAttribute("dinnerItems", new ArrayList<String>());
             session.setAttribute("points", 0);
             session.setAttribute("weightHistory", new ArrayList<String>());
+            session.setAttribute("foodLog", new ArrayList<String>());
             session.setAttribute("workoutLog", new ArrayList<String>());
+            session.setAttribute("dailyKcalLog", new ArrayList<String>());
             session.setAttribute("targetKcal", 2000);
 
             Managercontroller.getSharedWorkoutPlans().forEach(plan -> {
@@ -185,6 +189,12 @@ public class HealthController {
 
         if (!selectedFoodName.isEmpty() && selectedKcal != null && selectedKcal > 0) {
             addFoodToSession(session, meal, selectedFoodName, selectedKcal);
+            
+            // เพิ่มประวัติการกินลงใน Log รวม
+            String dateStr = new SimpleDateFormat("dd.MM.yyyy HH:mm").format(new Date());
+            List<String> log = getFoodLog(session);
+            log.add(0, dateStr + " - " + selectedFoodName + " (" + selectedKcal + " kcal)");
+            session.setAttribute("foodLog", log);
         }
         syncWithManager(session);
 
@@ -309,7 +319,9 @@ public class HealthController {
         model.addAttribute("totalEaten", totalEaten);
         model.addAttribute("targetKcal", session.getAttribute("targetKcal"));
 
+        model.addAttribute("foodLog", getFoodLog(session));
         model.addAttribute("workoutLog", getWorkoutLog(session));
+        model.addAttribute("dailyKcalLog", getDailyKcalLog(session));
         return "home";
     }
 
@@ -411,7 +423,7 @@ public class HealthController {
 
         if ((searchPreset == null || searchPreset.isBlank()) && (maxCal == null || maxCal <= 0)) {
             presets = presets.entrySet().stream()
-                    .limit(0)
+                    .limit(6)
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, 
                             (v1, v2) -> v1, LinkedHashMap::new));
         } else {
@@ -485,11 +497,31 @@ public class HealthController {
     }
 
     @SuppressWarnings("unchecked")
+    private List<String> getFoodLog(HttpSession session) {
+        List<String> log = (List<String>) session.getAttribute("foodLog");
+        if (log == null) {
+            log = new ArrayList<>();
+            session.setAttribute("foodLog", log);
+        }
+        return log;
+    }
+
+    @SuppressWarnings("unchecked")
     private List<String> getWorkoutLog(HttpSession session) {
         List<String> log = (List<String>) session.getAttribute("workoutLog");
         if (log == null) {
             log = new ArrayList<>();
             session.setAttribute("workoutLog", log);
+        }
+        return log;
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<String> getDailyKcalLog(HttpSession session) {
+        List<String> log = (List<String>) session.getAttribute("dailyKcalLog");
+        if (log == null) {
+            log = new ArrayList<>();
+            session.setAttribute("dailyKcalLog", log);
         }
         return log;
     }
@@ -574,7 +606,25 @@ public class HealthController {
         List<String> lItems = getMealItems(session, "lunch");
         List<String> dItems = getMealItems(session, "dinner");
         List<String> history = getWeightHistory(session);
+        List<String> foodLog = getFoodLog(session);
         List<String> workoutLog = getWorkoutLog(session);
+
+        // อัปเดตประวัติแคลอรี่รวมรายวัน (Aggregation)
+        String dateStr = new SimpleDateFormat("dd.MM.yyyy").format(new Date());
+        List<String> dailyKcalLog = getDailyKcalLog(session);
+        boolean found = false;
+        for (int i = 0; i < dailyKcalLog.size(); i++) {
+            if (dailyKcalLog.get(i).startsWith(dateStr)) {
+                dailyKcalLog.set(i, dateStr + " - Total: " + totalEaten + " kcal");
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            dailyKcalLog.add(0, dateStr + " - Total: " + totalEaten + " kcal");
+        }
+        session.setAttribute("dailyKcalLog", dailyKcalLog);
+
         
         Map<String, Boolean> workouts = new LinkedHashMap<>();
         Managercontroller.getSharedWorkoutPlans().forEach(p -> {
@@ -582,6 +632,6 @@ public class HealthController {
         });
 
         Managercontroller.syncUser(username, password, userImage, targetKcal, weight, goalWeight, height, bmiStatus, points, totalEaten,
-                                   bTotal, lTotal, dTotal, bItems, lItems, dItems, history, workoutLog, workouts);
+                                   bTotal, lTotal, dTotal, bItems, lItems, dItems, history, foodLog, workoutLog, dailyKcalLog, workouts);
     }
 }

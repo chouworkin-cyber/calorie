@@ -195,6 +195,14 @@
         <div class="list-item"><span>Lunch</span> <b th:text="${lunch} + ' kcal'">500 kcal</b></div>
         <div class="list-item"><span>Dinner</span> <b th:text="${dinner} + ' kcal'">500 kcal</b></div>
 
+        <div class="summary-title" style="margin-top: 20px;">Overall Eating History</div>
+        <div class="list-item" th:each="log : ${dailyKcalLog}">
+            <span th:text="${log}">09.05.2026 - Total: 1500 kcal</span>
+        </div>
+        <div class="list-item" th:if="${#lists.isEmpty(dailyKcalLog)}">
+            <span>No eating summary recorded yet.</span>
+        </div>
+
         <div class="summary-title" style="margin-top: 20px;">Workout History</div>
         <div class="list-item" th:each="log : ${workoutLog}">
             <span th:text="${log}">09.05.2026 09:00 - Beginner (+50 pts)</span>

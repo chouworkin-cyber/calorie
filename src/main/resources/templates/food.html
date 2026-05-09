@@ -372,7 +372,10 @@
 
             <!-- Preset Foods for Breakfast - Hidden when completed -->
             <div class="preset-grid" th:if="${breakfast == null || breakfast == 0}">
-                <div class="preset-card" th:each="preset : ${presetFoods}">
+                <div class="preset-card" th:each="preset : ${presetFoods}"
+                     th:data-name="${preset.key}"
+                     th:data-kcal="${preset.value}"
+                     onclick="selectPreset('breakfast', this.getAttribute('data-name'), this.getAttribute('data-kcal'))">
                     <span th:text="${preset.key}">ข้าวไข่เจียว</span>
                     <b th:text="${preset.value} + ' kcal'">350 kcal</b>
                 </div>
@@ -431,7 +434,10 @@
 
             <!-- Preset Foods for Lunch - Hidden when completed -->
             <div class="preset-grid" th:if="${lunch == null || lunch == 0}">
-                <div class="preset-card" th:each="preset : ${presetFoods}">
+                <div class="preset-card" th:each="preset : ${presetFoods}"
+                     th:data-name="${preset.key}"
+                     th:data-kcal="${preset.value}"
+                     onclick="selectPreset('lunch', this.getAttribute('data-name'), this.getAttribute('data-kcal'))">
                     <span th:text="${preset.key}">ข้าวไข่เจียว</span>
                     <b th:text="${preset.value} + ' kcal'">350 kcal</b>
                 </div>
@@ -488,7 +494,10 @@
 
             <!-- Preset Foods for Dinner - Hidden when completed -->
             <div class="preset-grid" th:if="${dinner == null || dinner == 0}">
-                <div class="preset-card" th:each="preset : ${presetFoods}">
+                <div class="preset-card" th:each="preset : ${presetFoods}"
+                     th:data-name="${preset.key}"
+                     th:data-kcal="${preset.value}"
+                     onclick="selectPreset('dinner', this.getAttribute('data-name'), this.getAttribute('data-kcal'))">
                     <span th:text="${preset.key}">ข้าวไข่เจียว</span>
                     <b th:text="${preset.value} + ' kcal'">350 kcal</b>
                 </div>
@@ -551,6 +560,14 @@
         <a href="/home" class="footer-link">Back</a>
     </div>
 </div>
+
+<script>
+    function selectPreset(meal, name, kcal) {
+        document.getElementById('foodName-' + meal).value = name;
+        document.getElementById('kcal-' + meal).value = kcal;
+        document.getElementById('presetFood-' + meal).value = name + '|' + kcal;
+    }
+</script>
 
 </body>
 </html>
