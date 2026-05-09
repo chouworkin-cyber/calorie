@@ -144,29 +144,29 @@
     <h3>Calorie Tracker</h3>
     
     <div class="content">
-    <form action="/calculate" method="post">
+    <form action="/calculate" method="post" id="calcForm">
         <div class="form-group">
             <label>Weight (kg):</label>
-            <input type="number" name="weight" step="0.1" th:value="${weight}" placeholder="Enter weight" required>
+            <input type="number" id="weight" name="weight" step="0.1" th:value="${weight}" placeholder="Enter weight" required>
         </div>
         <div class="form-group">
             <label>Height (cm):</label>
-            <input type="number" name="height" step="0.1" th:value="${height}" placeholder="Enter height" required>
+            <input type="number" id="height" name="height" step="0.1" th:value="${height}" placeholder="Enter height" required>
         </div>
         <div class="form-group">
             <label>Age (years):</label>
-            <input type="number" name="age" th:value="${age}" placeholder="Enter age" required>
+            <input type="number" id="age" name="age" th:value="${age}" placeholder="Enter age" required>
         </div>
         <div class="form-group">
             <label>Gender:</label>
-            <select name="gender">
+            <select id="gender" name="gender">
                 <option value="male" th:selected="${gender == 'male'}">male</option>
                 <option value="female" th:selected="${gender == 'female'}">female</option>
             </select>
         </div>
         <div class="form-group">
             <label>Activity Level:</label>
-            <select name="activity">
+            <select id="activity" name="activity">
                 <option value="1.2" th:selected="${activity == 1.2}">Non Active</option>
                 <option value="1.375" th:selected="${activity == 1.375}">Lightly Active</option>
                 <option value="1.55" th:selected="${activity == 1.55}">Moderately Active</option>
@@ -190,10 +190,29 @@
     </div>
 
 <script th:inline="javascript">
+    // บันทึกข้อมูลลง LocalStorage อัตโนมัติขณะพิมพ์
+    const formFields = ['weight', 'height', 'age', 'gender', 'activity'];
+    
+    window.addEventListener('load', () => {
+        formFields.forEach(field => {
+            const savedValue = localStorage.getItem('draft_' + field);
+            const input = document.getElementById(field);
+            if (savedValue && input && !input.value) {
+                input.value = savedValue;
+            }
+            
+            input?.addEventListener('input', (e) => {
+                localStorage.setItem('draft_' + field, e.target.value);
+            });
+        });
+    });
+
     function completeSetup() {
         const username = /*[[${session.username}]]*/ 'guest';
         localStorage.setItem('user_setup_' + username, 'true');
-        
+        // ล้างข้อมูลร่างเมื่อส่งข้อมูลสำเร็จ
+        formFields.forEach(field => localStorage.removeItem('draft_' + field));
+
         window.location.href = "/home";
     }
 </script>
