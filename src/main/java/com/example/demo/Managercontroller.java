@@ -32,6 +32,12 @@ public class Managercontroller {
         loadData();
         if (foodDB.isEmpty()) seedDefaultFood();
         if (workoutDB.isEmpty()) seedDefaultWorkouts();
+
+        // ระบบบันทึกข้อมูลสำรองก่อนปิดโปรแกรม (Shutdown Hook)
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println(">>> [CRITICAL] Saving all data before server stops...");
+            saveData();
+        }));
     }
 
     private static synchronized void saveData() {
@@ -44,6 +50,7 @@ public class Managercontroller {
             allData.put("workoutSeq", workoutIdSeq.get());
             allData.put("userSeq", userIdSeq.get());
             oos.writeObject(allData);
+            System.out.println(">>> [DATABASE] Data successfully persisted to " + DATA_FILE);
         } catch (IOException e) {
             e.printStackTrace();
         }

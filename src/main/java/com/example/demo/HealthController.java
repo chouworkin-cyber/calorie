@@ -104,6 +104,7 @@ public class HealthController {
 
     @GetMapping("/logout")
     public String logout(HttpSession session) {
+        syncWithManager(session); // บันทึกข้อมูลครั้งสุดท้ายก่อนล้าง Session
         session.invalidate();
         return "redirect:/login";
     }
