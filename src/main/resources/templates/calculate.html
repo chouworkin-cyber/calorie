@@ -123,10 +123,10 @@
             font-weight: bold;
             transition: 0.3s;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            display: block; /* Make it a block element to take full width */
-            max-width: 200px; /* Limit width */
+            display: block; 
+            max-width: 200px; 
             text-align: center;
-            margin: 20px auto 0 auto; /* Center horizontally */
+            margin: 20px auto 0 auto; 
         }
 
         .btn-submit-setup:hover { background-color: #424242; transform: translateY(-2px); }
@@ -189,7 +189,6 @@
     </div>
 
 <script th:inline="javascript">
-    // บันทึกข้อมูลลง LocalStorage อัตโนมัติขณะพิมพ์
     const formFields = ['weight', 'height', 'age', 'gender', 'activity'];
     
     window.addEventListener('load', () => {
@@ -209,7 +208,6 @@
     function completeSetup() {
         const username = /*[[${session.username}]]*/ 'guest';
         localStorage.setItem('user_setup_' + username, 'true');
-        // ล้างข้อมูลร่างเมื่อส่งข้อมูลสำเร็จ
         formFields.forEach(field => localStorage.removeItem('draft_' + field));
 
         window.location.href = "/home";

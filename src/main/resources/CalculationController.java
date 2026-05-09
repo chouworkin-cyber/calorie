@@ -36,11 +36,11 @@ public class CalculationController {
        
         userProfileRepository.save(userProfile);
         System.out.println("User profile saved to database: " + userProfile); 
-        
+
         double bmr;
         if ("male".equalsIgnoreCase(gender)) {
             bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
-        } else { // female
+        } else {
             bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
         }
         double tdee = bmr * activity;

@@ -32,8 +32,7 @@ public class Managercontroller {
         loadData();
         if (foodDB.isEmpty()) seedDefaultFood();
         if (workoutDB.isEmpty()) seedDefaultWorkouts();
-        seedDefaultUsers(); // เรียกใช้งานเสมอเพื่อตรวจสอบและเพิ่มชื่อที่ยังขาดอยู่ในระบบ
-
+        seedDefaultUsers(); 
         
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             System.out.println(">>> [CRITICAL] Saving all data before server stops...");
@@ -45,7 +44,7 @@ public class Managercontroller {
         File currentFile = new File(DATA_FILE);
         File backupFile = new File(DATA_FILE + ".bak");
 
-        // 1. สร้าง Backup ของข้อมูลที่มีอยู่เดิมก่อนจะเขียนทับ (Prevent Data Loss)
+    
         if (currentFile.exists()) {
             if (backupFile.exists()) backupFile.delete();
             currentFile.renameTo(backupFile);
@@ -62,7 +61,7 @@ public class Managercontroller {
             oos.writeObject(allData);
             System.out.println(">>> [DATABASE] Data successfully persisted to " + DATA_FILE);
         } catch (IOException e) {
-            // 2. หากการบันทึกล้มเหลว พยายามกู้คืนไฟล์จาก Backup
+        
             if (backupFile.exists()) backupFile.renameTo(currentFile);
             e.printStackTrace();
         }
@@ -70,7 +69,6 @@ public class Managercontroller {
 
     @SuppressWarnings("unchecked")
     private static void loadData() {
-        // 3. พยายามโหลดจากไฟล์หลักก่อน หากไม่สำเร็จให้ลองโหลดจากไฟล์ Backup
         if (!loadFromFile(new File(DATA_FILE))) {
             System.out.println(">>> [RECOVERY] Primary file failed or missing. Trying backup...");
             if (!loadFromFile(new File(DATA_FILE + ".bak"))) {

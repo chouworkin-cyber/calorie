@@ -118,7 +118,7 @@ public class HealthController {
 
     @GetMapping("/logout")
     public String logout(HttpSession session) {
-        syncWithManager(session); // บันทึกข้อมูลครั้งสุดท้ายก่อนล้าง Session
+        syncWithManager(session);
         session.invalidate();
         return "redirect:/login";
     }
@@ -127,7 +127,6 @@ public class HealthController {
     public String getCalculatePage(HttpSession session, Model model) {
         Integer targetKcal = (Integer) session.getAttribute("targetKcal");
         
-        // ดึงข้อมูลร่างกายจาก Session มากรอกในฟอร์มให้อัตโนมัติ (Persistence)
         model.addAttribute("weight", session.getAttribute("userWeight"));
         model.addAttribute("height", session.getAttribute("userHeight"));
         model.addAttribute("age", session.getAttribute("userAge"));
@@ -208,7 +207,6 @@ public class HealthController {
         if (!selectedFoodName.isEmpty() && selectedKcal != null && selectedKcal > 0) {
             addFoodToSession(session, meal, selectedFoodName, selectedKcal);
             
-            // เพิ่มประวัติการกินลงใน Log รวม
             String dateStr = new SimpleDateFormat("dd.MM.yyyy HH:mm").format(new Date());
             List<String> log = getFoodLog(session);
             log.add(0, dateStr + " - " + selectedFoodName + " (" + selectedKcal + " kcal)");
@@ -631,7 +629,7 @@ public class HealthController {
         List<String> foodLog = getFoodLog(session);
         List<String> workoutLog = getWorkoutLog(session);
 
-        // อัปเดตประวัติแคลอรี่รวมรายวัน (Aggregation)
+    
         String dateStr = new SimpleDateFormat("dd.MM.yyyy").format(new Date());
         List<String> dailyKcalLog = getDailyKcalLog(session);
         boolean found = false;
