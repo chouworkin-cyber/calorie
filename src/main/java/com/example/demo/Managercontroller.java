@@ -481,7 +481,7 @@ public class Managercontroller {
     }
 
     
-    public static void syncUser(String username, String password, Integer targetKcal, Double weight, Double goalWeight, Double height,
+    public static void syncUser(String username, String password, String profileImage, Integer targetKcal, Double weight, Double goalWeight, Double height,
                             String bmiStatus, Integer points, Integer totalEaten,
                             Integer bTotal, Integer lTotal, Integer dTotal,
                             List<String> bItems, List<String> lItems, List<String> dItems,
@@ -494,9 +494,21 @@ public class Managercontroller {
 
         UserRecord record = userDB.computeIfAbsent(username,
                 k -> new UserRecord(userIdSeq.getAndIncrement(), k));
-        record.syncFromSession(username, password, targetKcal, weight, goalWeight, height, bmiStatus, points, totalEaten,
+        record.syncFromSession(username, password, profileImage, targetKcal, weight, goalWeight, height, bmiStatus, points, totalEaten,
                                bTotal, lTotal, dTotal, bItems, lItems, dItems, history, workouts);
         saveData();
+    }
+
+    public static void renameUser(String oldName, String newName) {
+        if (oldName == null || newName == null || oldName.equals(newName)) return;
+        if ("manager".equalsIgnoreCase(newName) || newName.isBlank()) return;
+        
+        UserRecord record = userDB.remove(oldName); // ดึงข้อมูลเดิมออกมา
+        if (record != null) {
+            record.setName(newName);
+            userDB.put(newName, record); // บันทึกเข้าที่ใหม่ด้วยชื่อใหม่
+            saveData();
+        }
     }
 
     public static UserRecord getUserRecord(String username) {

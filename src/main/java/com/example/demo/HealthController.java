@@ -38,16 +38,26 @@ public class HealthController {
             return "redirect:/login";
         }
 
-        session.setAttribute("username", username);
-        
         UserRecord existingUser = Managercontroller.getUserRecord(username);
+
+        // 1. ตรวจสอบความถูกต้องก่อนเริ่มเซสชันใหม่
+        if (existingUser != null && !password.equals(existingUser.getPassword())) {
+            ra.addFlashAttribute("loginError", "Invalid password for existing user");
+            return "redirect:/login";
+        }
+
+        // 2. ล้างข้อมูลเก่าในเซสชันทั้งหมดเพื่อความปลอดภัยและความเป็นส่วนตัว (Data Separation)
+        java.util.Enumeration<String> attrs = session.getAttributeNames();
+        while (attrs.hasMoreElements()) {
+            session.removeAttribute(attrs.nextElement());
+        }
+
+        // 3. ตั้งค่าข้อมูลผู้ใช้ลงในเซสชันใหม่
+        session.setAttribute("username", username);
+        session.setAttribute("password", password);
+
         if (existingUser != null) {
-            if (!password.equals(existingUser.getPassword())) {
-                ra.addFlashAttribute("loginError", "Invalid password for existing user");
-                return "redirect:/login";
-            }
-        
-            session.setAttribute("password", existingUser.getPassword());
+            session.setAttribute("userImage", existingUser.getProfileImage());
             session.setAttribute("targetKcal", existingUser.getTargetKcal());
             session.setAttribute("userWeight", existingUser.getWeight());
             session.setAttribute("goalWeight", existingUser.getGoalWeight());
@@ -67,7 +77,11 @@ public class HealthController {
             });
         } else {
             // กำหนดค่าเริ่มต้นสำหรับผู้ใช้ใหม่
-            session.setAttribute("password", password);
+            session.setAttribute("userImage", null);
+            session.setAttribute("userWeight", 0.0);
+            session.setAttribute("goalWeight", 0.0);
+            session.setAttribute("userHeight", 0.0);
+            session.setAttribute("userStatus", "normal");
             session.setAttribute("breakfastTotal", 0);
             session.setAttribute("lunchTotal", 0);
             session.setAttribute("dinnerTotal", 0);
@@ -85,6 +99,12 @@ public class HealthController {
 
         syncWithManager(session); 
         return "redirect:/home";
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate(); // ทำลายเซสชันทิ้งทั้งหมด
+        return "redirect:/login";
     }
     
     @GetMapping("/calculate")
@@ -291,6 +311,7 @@ public class HealthController {
             user.setWeight(getCurrentWeight(session));
             user.setGoalWeight(getGoalWeight(session));
             user.setBmiStatus((String) session.getAttribute("userStatus"));
+            user.setProfileImage((String) session.getAttribute("userImage"));
             
             Double h = (Double) session.getAttribute("userHeight");
             user.setHeight(h != null ? h : 0.0);
@@ -316,9 +337,27 @@ public class HealthController {
             @RequestParam String username,
             @RequestParam(required = false) MultipartFile profileImage,
             @RequestParam(required = false, defaultValue = "false") boolean removeImage,
-            HttpSession session) throws IOException {
+            HttpSession session,
+            RedirectAttributes ra) throws IOException {
         
-        session.setAttribute("username", username);
+        String currentUsername = (String) session.getAttribute("username");
+        String newUsername = (username != null) ? username.trim() : "";
+
+        // ตรวจสอบว่าชื่อผู้ใช้ใหม่ซ้ำกับผู้อื่นหรือไม่ (Unique Username Validation)
+        if (!newUsername.equalsIgnoreCase(currentUsername)) {
+            if ("manager".equalsIgnoreCase(newUsername) || Managercontroller.getUserRecord(newUsername) != null) {
+                // ส่งข้อความแจ้งเตือนหากชื่อซ้ำ
+                ra.addFlashAttribute("loginError", "Username '" + newUsername + "' is already taken.");
+                return "redirect:/person";
+            }
+        }
+
+        // ย้ายข้อมูลในฐานข้อมูลหลักหากมีการเปลี่ยนชื่อ (Maintain One Profile per User)
+        if (!newUsername.equals(currentUsername)) {
+            Managercontroller.renameUser(currentUsername, newUsername);
+        }
+
+        session.setAttribute("username", newUsername);
 
         if (removeImage) {
             session.removeAttribute("userImage");
@@ -465,6 +504,7 @@ public class HealthController {
 
         Integer targetKcal = (Integer) session.getAttribute("targetKcal");
         String password = (String) session.getAttribute("password");
+        String userImage = (String) session.getAttribute("userImage");
         Double weight = (Double) session.getAttribute("userWeight");
         Double goalWeight = (Double) session.getAttribute("goalWeight");
         Double height = (Double) session.getAttribute("userHeight");
@@ -485,7 +525,7 @@ public class HealthController {
             workouts.put(p.getKey(), isWorkoutClaimed(session, p.getKey()));
         });
 
-        Managercontroller.syncUser(username, password, targetKcal, weight, goalWeight, height, bmiStatus, points, totalEaten,
+        Managercontroller.syncUser(username, password, userImage, targetKcal, weight, goalWeight, height, bmiStatus, points, totalEaten,
                                    bTotal, lTotal, dTotal, bItems, lItems, dItems, history, workouts);
     }
 }

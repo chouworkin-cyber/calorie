@@ -183,6 +183,7 @@ class ManagedWorkoutPlan extends WorkoutPlan {
 class RegisteredUser extends NamedItem {
     protected int points;
     protected String password;
+    protected String profileImage;
 
     public RegisteredUser(int id, String username) {
         super(id, username);
@@ -192,8 +193,10 @@ class RegisteredUser extends NamedItem {
     public String getUsername() { return name; }
     public int    getPoints()   { return points; }
     public String getPassword() { return password; }
+    public String getProfileImage() { return profileImage; }
     public void   setPoints(int p)   { this.points = p; }
     public void   setPassword(String p) { this.password = p; }
+    public void   setProfileImage(String img) { this.profileImage = img; }
     public void   addPoints(int p)   { this.points += p; }
 
    
@@ -275,13 +278,14 @@ class UserRecord extends HealthUser {
     public List<String> getWeightHistory() { return weightHistory; }
     public Map<String, Boolean> getClaimedWorkouts() { return claimedWorkouts; }
 
-    public void syncFromSession(String username, String password, Integer targetKcal, Double weight, Double goalWeight,
+    public void syncFromSession(String username, String password, String profileImage, Integer targetKcal, Double weight, Double goalWeight,
                                 Double height, String bmiStatus, Integer points, Integer totalEaten,
                                 Integer bTotal, Integer lTotal, Integer dTotal,
                                 List<String> bItems, List<String> lItems, List<String> dItems,
                                 List<String> history, Map<String, Boolean> workouts) {
         this.name = username;
         if (password   != null) this.password   = password;
+        if (profileImage != null) this.profileImage = profileImage;
         if (targetKcal != null) this.targetKcal = targetKcal;
         if (weight     != null) this.weight     = weight;
         if (goalWeight != null) this.goalWeight = goalWeight;
