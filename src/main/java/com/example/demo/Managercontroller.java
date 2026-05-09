@@ -42,6 +42,15 @@ public class Managercontroller {
     }
 
     private static synchronized void saveData() {
+        File currentFile = new File(DATA_FILE);
+        File backupFile = new File(DATA_FILE + ".bak");
+
+        // 1. สร้าง Backup ของข้อมูลที่มีอยู่เดิมก่อนจะเขียนทับ (Prevent Data Loss)
+        if (currentFile.exists()) {
+            if (backupFile.exists()) backupFile.delete();
+            currentFile.renameTo(backupFile);
+        }
+
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(DATA_FILE))) {
             Map<String, Object> allData = new HashMap<>();
             allData.put("food", new HashMap<>(foodDB));
@@ -53,14 +62,26 @@ public class Managercontroller {
             oos.writeObject(allData);
             System.out.println(">>> [DATABASE] Data successfully persisted to " + DATA_FILE);
         } catch (IOException e) {
+            // 2. หากการบันทึกล้มเหลว พยายามกู้คืนไฟล์จาก Backup
+            if (backupFile.exists()) backupFile.renameTo(currentFile);
             e.printStackTrace();
         }
     }
 
     @SuppressWarnings("unchecked")
     private static void loadData() {
-        File file = new File(DATA_FILE);
-        if (!file.exists()) return;
+        // 3. พยายามโหลดจากไฟล์หลักก่อน หากไม่สำเร็จให้ลองโหลดจากไฟล์ Backup
+        if (!loadFromFile(new File(DATA_FILE))) {
+            System.out.println(">>> [RECOVERY] Primary file failed or missing. Trying backup...");
+            if (!loadFromFile(new File(DATA_FILE + ".bak"))) {
+                System.out.println(">>> [INFO] No saved data found. Starting fresh.");
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static boolean loadFromFile(File file) {
+        if (!file.exists()) return false;
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
             Map<String, Object> allData = (Map<String, Object>) ois.readObject();
             foodDB.putAll((Map<Integer, FoodItem>) allData.get("food"));
@@ -71,8 +92,10 @@ public class Managercontroller {
             workoutIdSeq.set((Integer) allData.get("workoutSeq"));
             userIdSeq.set((Integer) allData.get("userSeq"));
             System.out.println(">>> [SUCCESS] Database loaded from " + DATA_FILE);
+            return true;
         } catch (Exception e) {
-            System.err.println("Could not load saved data: " + e.getMessage());
+            System.err.println(">>> [ERROR] Error loading from " + file.getName() + ": " + e.getMessage());
+            return false;
         }
     }
 
