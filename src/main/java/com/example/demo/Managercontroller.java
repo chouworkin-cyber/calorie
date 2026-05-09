@@ -32,8 +32,9 @@ public class Managercontroller {
         loadData();
         if (foodDB.isEmpty()) seedDefaultFood();
         if (workoutDB.isEmpty()) seedDefaultWorkouts();
+        seedDefaultUsers(); // เรียกใช้งานเสมอเพื่อตรวจสอบและเพิ่มชื่อที่ยังขาดอยู่ในระบบ
 
-        // ระบบบันทึกข้อมูลสำรองก่อนปิดโปรแกรม (Shutdown Hook)
+        
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             System.out.println(">>> [CRITICAL] Saving all data before server stops...");
             saveData();
@@ -496,7 +497,7 @@ public class Managercontroller {
                             String bmiStatus, Integer points, Integer totalEaten,
                             Integer bTotal, Integer lTotal, Integer dTotal,
                             List<String> bItems, List<String> lItems, List<String> dItems,
-                            List<String> history, Map<String, Boolean> workouts) {
+                            List<String> history, List<String> workoutLog, Map<String, Boolean> workouts) {
 
         if (username == null || username.isBlank() || 
             "manager".equalsIgnoreCase(username) || "admin1".equalsIgnoreCase(username)) {
@@ -506,7 +507,7 @@ public class Managercontroller {
         UserRecord record = userDB.computeIfAbsent(username, 
                 k -> new UserRecord(userIdSeq.getAndIncrement(), k));
         record.syncFromSession(username, password, profileImage, targetKcal, weight, goalWeight, height, bmiStatus, points, totalEaten,
-                               bTotal, lTotal, dTotal, bItems, lItems, dItems, history, workouts);
+                               bTotal, lTotal, dTotal, bItems, lItems, dItems, history, workoutLog, workouts);
         saveData();
     }
 
@@ -604,5 +605,52 @@ public class Managercontroller {
                     (String) d[4], (List<String>) d[5], (int) d[6]);
             workoutDB.put(id, p);
         }
+    }
+
+    private static void seedDefaultUsers() {
+        if (!userDB.containsKey("cha")) {
+            System.out.println(">>> [SEED] Adding default user: cha");
+            int id = userIdSeq.getAndIncrement();
+            UserRecord u = new UserRecord(id, "cha");
+            u.setPassword("password123");
+            u.setWeight(70.0);
+            u.setHeight(175.0);
+            u.setPoints(500);
+            u.setBmiStatus("normal");
+            u.setGoalWeight(65.0);
+            u.setTargetKcal(2000);
+            u.getWeightHistory().add("08.05.2026 08:00 - 72.0 kg");
+            userDB.put("cha", u);
+        }
+
+        if (!userDB.containsKey("chou")) {
+            System.out.println(">>> [SEED] Adding default user: chou");
+            int id = userIdSeq.getAndIncrement();
+            UserRecord u = new UserRecord(id, "chou");
+            u.setPassword("securepass");
+            u.setWeight(60.0);
+            u.setHeight(160.0);
+            u.setPoints(200);
+            u.setBmiStatus("normal");
+            u.setGoalWeight(55.0);
+            u.setTargetKcal(1800);
+            userDB.put("chou", u);
+        }
+
+        if (!userDB.containsKey("yani")) {
+            System.out.println(">>> [SEED] Adding default user: yani");
+            int id = userIdSeq.getAndIncrement();
+            UserRecord u = new UserRecord(id, "yani");
+            u.setPassword("anotherpass");
+            u.setWeight(80.0);
+            u.setHeight(180.0);
+            u.setPoints(250);
+            u.setBmiStatus("overweight");
+            u.setGoalWeight(75.0);
+            u.setTargetKcal(2200);
+            userDB.put("yani", u);
+        }
+
+        saveData();
     }
 }

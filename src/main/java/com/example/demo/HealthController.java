@@ -73,6 +73,7 @@ public class HealthController {
             session.setAttribute("lunchItems", new ArrayList<>(existingUser.getLunchItems()));
             session.setAttribute("dinnerItems", new ArrayList<>(existingUser.getDinnerItems()));
             session.setAttribute("weightHistory", new ArrayList<>(existingUser.getWeightHistory()));
+            session.setAttribute("workoutLog", new ArrayList<>(existingUser.getWorkoutLog()));
             
             existingUser.getClaimedWorkouts().forEach((key, val) -> {
                 session.setAttribute(key + "Claimed", val);
@@ -91,6 +92,7 @@ public class HealthController {
             session.setAttribute("dinnerItems", new ArrayList<String>());
             session.setAttribute("points", 0);
             session.setAttribute("weightHistory", new ArrayList<String>());
+            session.setAttribute("workoutLog", new ArrayList<String>());
             session.setAttribute("targetKcal", 2000);
 
             Managercontroller.getSharedWorkoutPlans().forEach(plan -> {
@@ -268,6 +270,13 @@ public class HealthController {
             int rewardPoints = getWorkoutReward(key);
             session.setAttribute(key + "Claimed", true);
             session.setAttribute("points", getPoints(session) + rewardPoints);
+            
+        
+            String dateStr = new SimpleDateFormat("dd.MM.yyyy HH:mm").format(new Date());
+            List<String> log = getWorkoutLog(session);
+            log.add(0, dateStr + " - " + getWorkoutTitle(key) + " (+" + rewardPoints + " pts)");
+            session.setAttribute("workoutLog", log);
+
             syncWithManager(session);
         }
         return "redirect:/workout";
@@ -299,6 +308,8 @@ public class HealthController {
         int totalEaten = getMealTotal(session, "breakfast") + getMealTotal(session, "lunch") + getMealTotal(session, "dinner");
         model.addAttribute("totalEaten", totalEaten);
         model.addAttribute("targetKcal", session.getAttribute("targetKcal"));
+
+        model.addAttribute("workoutLog", getWorkoutLog(session));
         return "home";
     }
 
@@ -473,6 +484,16 @@ public class HealthController {
         return history;
     }
 
+    @SuppressWarnings("unchecked")
+    private List<String> getWorkoutLog(HttpSession session) {
+        List<String> log = (List<String>) session.getAttribute("workoutLog");
+        if (log == null) {
+            log = new ArrayList<>();
+            session.setAttribute("workoutLog", log);
+        }
+        return log;
+    }
+
     private int getPoints(HttpSession session) {
         Integer points = (Integer) session.getAttribute("points");
         return points != null ? points : 0;
@@ -516,6 +537,13 @@ public class HealthController {
         return claimed != null && claimed;
     }
 
+    private String getWorkoutTitle(String key) {
+        return Managercontroller.getSharedWorkoutPlans().stream()
+                .filter(p -> p.getKey().equals(key))
+                .map(ManagedWorkoutPlan::getTitle)
+                .findFirst().orElse("Workout");
+    }
+
     private int getWorkoutReward(String levelKey) {
         return Managercontroller.getSharedWorkoutPlans().stream()
                 .filter(p -> p.getKey().equals(levelKey))
@@ -546,6 +574,7 @@ public class HealthController {
         List<String> lItems = getMealItems(session, "lunch");
         List<String> dItems = getMealItems(session, "dinner");
         List<String> history = getWeightHistory(session);
+        List<String> workoutLog = getWorkoutLog(session);
         
         Map<String, Boolean> workouts = new LinkedHashMap<>();
         Managercontroller.getSharedWorkoutPlans().forEach(p -> {
@@ -553,6 +582,6 @@ public class HealthController {
         });
 
         Managercontroller.syncUser(username, password, userImage, targetKcal, weight, goalWeight, height, bmiStatus, points, totalEaten,
-                                   bTotal, lTotal, dTotal, bItems, lItems, dItems, history, workouts);
+                                   bTotal, lTotal, dTotal, bItems, lItems, dItems, history, workoutLog, workouts);
     }
 }

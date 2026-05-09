@@ -259,6 +259,7 @@ class UserRecord extends HealthUser {
     private List<String> lunchItems = new ArrayList<>();
     private List<String> dinnerItems = new ArrayList<>();
     private List<String> weightHistory = new ArrayList<>();
+    private List<String> workoutLog = new ArrayList<>();
     private Map<String, Boolean> claimedWorkouts = new HashMap<>();
 
     public UserRecord(int id, String username) {
@@ -276,13 +277,14 @@ class UserRecord extends HealthUser {
     public List<String> getLunchItems() { return lunchItems; }
     public List<String> getDinnerItems() { return dinnerItems; }
     public List<String> getWeightHistory() { return weightHistory; }
+    public List<String> getWorkoutLog() { return workoutLog; }
     public Map<String, Boolean> getClaimedWorkouts() { return claimedWorkouts; }
 
     public void syncFromSession(String username, String password, String profileImage, Integer targetKcal, Double weight, Double goalWeight,
                                 Double height, String bmiStatus, Integer points, Integer totalEaten,
                                 Integer bTotal, Integer lTotal, Integer dTotal,
                                 List<String> bItems, List<String> lItems, List<String> dItems,
-                                List<String> history, Map<String, Boolean> workouts) {
+                                List<String> history, List<String> workoutLog, Map<String, Boolean> workouts) {
         this.name = username;
         if (password   != null) this.password   = password;
         if (profileImage != null) this.profileImage = profileImage;
@@ -301,6 +303,7 @@ class UserRecord extends HealthUser {
         if (lItems != null) this.lunchItems = new ArrayList<>(lItems);
         if (dItems != null) this.dinnerItems = new ArrayList<>(dItems);
         if (history != null) this.weightHistory = new ArrayList<>(history);
+        if (workoutLog != null) this.workoutLog = new ArrayList<>(workoutLog);
         if (workouts != null) this.claimedWorkouts = new HashMap<>(workouts);
     }
 
