@@ -252,7 +252,7 @@
                 <div class="done-badge" th:if="${plan.completed}">Claimed</div>
 
                 <form th:if="${!plan.completed}" action="/workout/claim" method="post">
-                    <input type="hidden" name="level" th:value="${plan.key}" />
+                    <input type="hidden" name="key" th:value="${plan.key}" /> <!-- ส่ง Unique Key (ID) ไป -->
                     <button type="submit" class="claim-btn">Claim</button>
                 </form>
             </div>

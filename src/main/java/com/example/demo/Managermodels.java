@@ -3,10 +3,12 @@ package com.example.demo;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
+import java.io.Serializable;
 import java.util.HashMap;
 
 
-abstract class NamedItem {
+abstract class NamedItem implements Serializable {
+    private static final long serialVersionUID = 1L;
     protected int id;
     protected String name;
 
@@ -91,6 +93,23 @@ class FoodItem extends CategorizedFood {
     }
 }
 
+class DrinkItem extends FoodItem {
+    private int volumeMl;
+
+    public DrinkItem(int id, String name, int calories, String category, 
+                     double protein, double carbs, double fat, int volumeMl) {
+        super(id, name, calories, category, protein, carbs, fat);
+        this.volumeMl = volumeMl;
+    }
+
+    public int getVolumeMl() { return volumeMl; }
+    public void setVolumeMl(int ml) { this.volumeMl = ml; }
+
+    @Override
+    public String getItemType() { return "DrinkItem (" + volumeMl + "ml)"; }
+}
+
+
 class BaseWorkout extends NamedItem {
     protected String level;
     protected int points;
@@ -146,7 +165,7 @@ class ManagedWorkoutPlan extends WorkoutPlan {
         super(id, name, level, points, description, exercises);
         this.durationMinutes = durationMinutes;
         this.completed = false;
-        this.key = level;
+        this.key = String.valueOf(id); // ใช้ ID เป็น Key เพื่อให้แยกจากกันแม้ Level จะซ้ำ
     }
 
     public int     getDurationMinutes() { return durationMinutes; }
@@ -163,6 +182,7 @@ class ManagedWorkoutPlan extends WorkoutPlan {
 
 class RegisteredUser extends NamedItem {
     protected int points;
+    protected String password;
 
     public RegisteredUser(int id, String username) {
         super(id, username);
@@ -171,7 +191,9 @@ class RegisteredUser extends NamedItem {
 
     public String getUsername() { return name; }
     public int    getPoints()   { return points; }
+    public String getPassword() { return password; }
     public void   setPoints(int p)   { this.points = p; }
+    public void   setPassword(String p) { this.password = p; }
     public void   addPoints(int p)   { this.points += p; }
 
    
@@ -192,6 +214,7 @@ class HealthUser extends RegisteredUser {
     protected double weight;
     protected double height;
     protected int    targetKcal;
+    protected double goalWeight;
     protected String bmiStatus; 
 
     public HealthUser(int id, String username) {
@@ -199,16 +222,19 @@ class HealthUser extends RegisteredUser {
         this.weight = 0;
         this.height = 0;
         this.targetKcal = 2000;
+        this.goalWeight = 0;
         this.bmiStatus = null;
     }
 
     public double getWeight()     { return weight; }
     public double getHeight()     { return height; }
     public int    getTargetKcal() { return targetKcal; }
+    public double getGoalWeight() { return goalWeight; }
     public String getBmiStatus()  { return bmiStatus; }
 
     public void setWeight(double w)      { this.weight = w; }
     public void setHeight(double h)      { this.height = h; }
+    public void setGoalWeight(double g)  { this.goalWeight = g; }
     public void setTargetKcal(int k)     { this.targetKcal = k; }
     public void setBmiStatus(String s)   { this.bmiStatus = s; }
 
@@ -249,14 +275,16 @@ class UserRecord extends HealthUser {
     public List<String> getWeightHistory() { return weightHistory; }
     public Map<String, Boolean> getClaimedWorkouts() { return claimedWorkouts; }
 
-    public void syncFromSession(String username, Integer targetKcal, Double weight,
+    public void syncFromSession(String username, String password, Integer targetKcal, Double weight, Double goalWeight,
                                 Double height, String bmiStatus, Integer points, Integer totalEaten,
                                 Integer bTotal, Integer lTotal, Integer dTotal,
                                 List<String> bItems, List<String> lItems, List<String> dItems,
                                 List<String> history, Map<String, Boolean> workouts) {
         this.name = username;
+        if (password   != null) this.password   = password;
         if (targetKcal != null) this.targetKcal = targetKcal;
         if (weight     != null) this.weight     = weight;
+        if (goalWeight != null) this.goalWeight = goalWeight;
         if (height     != null) this.height     = height;
         if (bmiStatus  != null) this.bmiStatus  = bmiStatus;
         if (points     != null) this.points     = points;
@@ -274,4 +302,23 @@ class UserRecord extends HealthUser {
 
     @Override
     public String getItemType() { return "UserRecord"; }
+}
+
+class PremiumUserRecord extends UserRecord {
+    private double pointsMultiplier;
+
+    public PremiumUserRecord(int id, String username, double multiplier) {
+        super(id, username);
+        this.pointsMultiplier = multiplier;
+    }
+
+    @Override
+    public void addPoints(int p) {
+        super.addPoints((int) (p * pointsMultiplier));
+    }
+
+    @Override
+    public String getMotivationMessage() {
+        return "🌟 VIP: " + super.getMotivationMessage();
+    }
 }

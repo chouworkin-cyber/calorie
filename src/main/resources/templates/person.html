@@ -82,15 +82,17 @@
 
     
         .section-title { color: var(--sut-orange); font-weight: bold; margin: 15px 0 10px; font-size: 0.9rem; align-self: flex-start; }
-        .list-item { 
-            display: flex; 
-            justify-content: space-between; 
-            padding: 10px 15px; background: white; 
-            margin-bottom: 6px; border-radius: 6px; 
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            font-size: 0.85rem; 
+        .history-list { width: 100%; padding: 0; list-style: none; margin: 0; }
+        .history-list li {
+            background: white;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-size: 0.85rem;
             width: 100%;
             box-sizing: border-box;
+            color: var(--sut-dark);
         }
 
     
@@ -154,7 +156,7 @@
             <div class="preview-circle">
                 <img id="img-preview" th:src="${session.userImage != null ? session.userImage : '#'}" 
                     th:style="${session.userImage == null ? 'display:none' : 'display:block'}" />
-                <span id="placeholder" th:style="${session.userImage != null ? 'display:none' : 'font-size:40px; color:white'}">👤</span>
+                <span id="placeholder" th:style="${session.userImage != null ? 'display:none' : 'font-size:40px; color:white'}">P</span>
             </div>
             <div class="edit-hint">Tap to change photo</div>
         </label>
@@ -172,11 +174,12 @@
         </div>
 
         <div class="section-title">Weight History</div>
-        <div class="list-item" th:each="entry : ${weightHistory}">
-            <span th:text="${#strings.arraySplit(entry, ' - ')[0]}">Date</span>
-            <b th:text="${#strings.arraySplit(entry, ' - ')[1]}">Weight</b>
-        </div>
-        <div th:if="${#lists.isEmpty(weightHistory)}" class="list-item" style="justify-content:center; color:#999;">
+        <ul class="history-list">
+            <li th:each="entry : ${weightHistory}" th:text="${entry}">
+                01/01/2024 10:00 - 70.0 kg
+            </li>
+        </ul>
+        <div th:if="${#lists.isEmpty(weightHistory)}" style="text-align:center; color:#999; font-size: 0.85rem; padding: 10px;">
             No history recorded yet
         </div>
 
@@ -207,7 +210,7 @@
         document.getElementById('placeholder').style.display = 'block';
         document.getElementById('remove-photo-link').style.display = 'none';
         document.getElementById('remove-image-input').value = 'true';
-        document.getElementById('file-input').value = ''; // ล้างไฟล์ที่เลือกค้างไว้
+        document.getElementById('file-input').value = '';
     }
 </script>
 

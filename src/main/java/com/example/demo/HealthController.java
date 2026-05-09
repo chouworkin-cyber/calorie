@@ -1,17 +1,15 @@
 package com.example.demo;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.multipart.MultipartFile;
 import jakarta.servlet.http.HttpSession;
 
@@ -29,14 +27,30 @@ public class HealthController {
     }
 
     @PostMapping("/login")
-    public String handleLogin(@RequestParam String username, HttpSession session) {
+    public String handleLogin(@RequestParam String username, 
+                              @RequestParam String password, 
+                              HttpSession session,
+                              RedirectAttributes ra) {
+        
+        // ตรวจสอบความยาวรหัสผ่าน (ไม่ต่ำกว่า 8 ตัว)
+        if (password == null || password.length() < 8) {
+            ra.addFlashAttribute("loginError", "password must be at least 8 characters long");
+            return "redirect:/login";
+        }
+
         session.setAttribute("username", username);
         
         UserRecord existingUser = Managercontroller.getUserRecord(username);
         if (existingUser != null) {
-            // โหลดข้อมูลเดิมกลับเข้า Session
+            if (!password.equals(existingUser.getPassword())) {
+                ra.addFlashAttribute("loginError", "Invalid password for existing user");
+                return "redirect:/login";
+            }
+        
+            session.setAttribute("password", existingUser.getPassword());
             session.setAttribute("targetKcal", existingUser.getTargetKcal());
             session.setAttribute("userWeight", existingUser.getWeight());
+            session.setAttribute("goalWeight", existingUser.getGoalWeight());
             session.setAttribute("userHeight", existingUser.getHeight());
             session.setAttribute("userStatus", existingUser.getBmiStatus());
             session.setAttribute("points", existingUser.getPoints());
@@ -53,6 +67,7 @@ public class HealthController {
             });
         } else {
             // กำหนดค่าเริ่มต้นสำหรับผู้ใช้ใหม่
+            session.setAttribute("password", password);
             session.setAttribute("breakfastTotal", 0);
             session.setAttribute("lunchTotal", 0);
             session.setAttribute("dinnerTotal", 0);
@@ -96,6 +111,13 @@ public class HealthController {
         session.setAttribute("userWeight", weight);
         session.setAttribute("userHeight", height);
         session.setAttribute("userStatus", userHealth.getStatus());
+
+        // บันทึกน้ำหนักลงในประวัติโดยอัตโนมัติเมื่อมีการคำนวณใหม่
+        List<String> history = getWeightHistory(session);
+        String dateStr = new SimpleDateFormat("dd.MM.yyyy HH:mm").format(new Date());
+        history.add(0, dateStr + " - " + String.format("%.1f", weight) + " kg (Calculated)");
+        session.setAttribute("weightHistory", history);
+
         syncWithManager(session);
 
         model.addAttribute("weight", weight);
@@ -109,8 +131,9 @@ public class HealthController {
     }
 
     @GetMapping("/food")
-    public String showFoodPage(HttpSession session, Model model) {
-        populateFoodModel(session, model);
+    public String showFoodPage(@RequestParam(required = false) String searchPreset, 
+                               HttpSession session, Model model) {
+        populateFoodModel(session, model, searchPreset);
         return "food";
     }
 
@@ -167,9 +190,9 @@ public class HealthController {
         if (!updateGoalOnly && currentWeight != null && currentWeight > 0) {
             session.setAttribute("userWeight", currentWeight);
 
-            String savedDate = (recordDate != null && !recordDate.isBlank()) ? recordDate : "No date";
+            String savedDate = (recordDate != null && !recordDate.isBlank()) ? recordDate : new SimpleDateFormat("dd.MM.yyyy HH:mm").format(new Date());
             List<String> history = getWeightHistory(session);
-            history.add(0, savedDate + " - " + currentWeight + " kg");
+            history.add(0, savedDate + " - " + String.format("%.1f", currentWeight) + " kg");
             session.setAttribute("weightHistory", history);
         }
         syncWithManager(session);
@@ -178,17 +201,42 @@ public class HealthController {
     }
 
     @GetMapping("/workout")
-    public String showWorkoutPage(HttpSession session, Model model) {
+    public String showWorkoutPage(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String sortBy,
+            HttpSession session, Model model) {
+        
+        List<Map<String, Object>> plans = getWorkoutPlans(session);
+
+        // เพิ่มระบบค้นหาท่าออกกำลังกายสำหรับผู้ใช้
+        if (search != null && !search.isBlank()) {
+            String query = search.toLowerCase();
+            plans = plans.stream()
+                    .filter(p -> ((String) p.get("title")).toLowerCase().contains(query) ||
+                                 ((String) p.get("level")).toLowerCase().contains(query))
+                    .collect(Collectors.toList());
+        }
+
+        // เพิ่มระบบเรียงลำดับท่าออกกำลังกายสำหรับผู้ใช้
+        if ("points".equals(sortBy)) {
+            plans.sort(Comparator.comparingInt(p -> (int) p.get("points")));
+        } else if ("title".equals(sortBy)) {
+            plans.sort(Comparator.comparing(p -> (String) p.get("title")));
+        }
+
         model.addAttribute("points", getPoints(session));
-        model.addAttribute("workoutPlans", getWorkoutPlans(session));
+        model.addAttribute("workoutPlans", plans);
+        model.addAttribute("search", search);
+        model.addAttribute("sortBy", sortBy);
         return "workout";
     }
 
     @PostMapping("/workout/claim")
-    public String claimWorkoutPoint(@RequestParam String level, HttpSession session) {
-        if (!isWorkoutClaimed(session, level)) {
-            int rewardPoints = getWorkoutReward(level);
-            session.setAttribute(level + "Claimed", true);
+    public String claimWorkoutPoint(@RequestParam(required = false) String key, HttpSession session) {
+        // ตรวจสอบสถานะการรับคะแนนโดยใช้ key (ID) แทน level
+        if (key != null && !key.isBlank() && !isWorkoutClaimed(session, key)) { 
+            int rewardPoints = getWorkoutReward(key);
+            session.setAttribute(key + "Claimed", true); // บันทึกสถานะแยกตาม key
             session.setAttribute("points", getPoints(session) + rewardPoints);
             syncWithManager(session);
         }
@@ -198,7 +246,23 @@ public class HealthController {
     @GetMapping("/home")
     public String showHome(HttpSession session, Model model) {
         syncWithManager(session);
+        String username = (String) session.getAttribute("username");
+
+        // คำนวณอันดับของผู้ใช้จากคะแนนทั้งหมด
+        List<UserRecord> rankedUsers = Managercontroller.getAllUsersSorted();
+        int rank = -1;
+        if (username != null) {
+            for (int i = 0; i < rankedUsers.size(); i++) {
+                if (rankedUsers.get(i).getUsername().equals(username)) {
+                    rank = i + 1;
+                    break;
+                }
+            }
+        }
+
         model.addAttribute("points", getPoints(session));
+        model.addAttribute("userRank", rank);
+        model.addAttribute("totalRankedUsers", rankedUsers.size());
         model.addAttribute("currentWeight", getCurrentWeight(session));
         model.addAttribute("breakfast", getMealTotal(session, "breakfast"));
         model.addAttribute("lunch", getMealTotal(session, "lunch"));
@@ -210,13 +274,40 @@ public class HealthController {
     }
 
     @GetMapping("/person")
-    public String showProfile(HttpSession session, Model model) {
+    public String showProfile(
+            @RequestParam(required = false) String sortHistory,
+            HttpSession session, Model model) {
         syncWithManager(session);
         String username = (String) session.getAttribute("username");
-        UserRecord user = Managercontroller.getUserRecord(username != null ? username : "Guest");
+        if (username == null) username = "Guest";
+
+        UserRecord user = Managercontroller.getUserRecord(username);
+        List<String> rawHistory = getWeightHistory(session);
         
+        // วิธีแก้: หากหาใน DB ไม่เจอ (กรณี manager) ให้สร้าง object จำลองขึ้นมาแสดงผลจาก Session แทน
+        if (user == null) {
+            user = new UserRecord(-1, username); // ใช้ ID ติดลบเพื่อระบุว่าเป็นตัวชั่วคราว
+            user.setPoints(getPoints(session));
+            user.setWeight(getCurrentWeight(session));
+            user.setGoalWeight(getGoalWeight(session));
+            user.setBmiStatus((String) session.getAttribute("userStatus"));
+            
+            Double h = (Double) session.getAttribute("userHeight");
+            user.setHeight(h != null ? h : 0.0);
+            Integer tk = (Integer) session.getAttribute("targetKcal");
+            user.setTargetKcal(tk != null ? tk : 2000);
+            user.getWeightHistory().addAll(rawHistory);
+        }
+        
+        List<String> history = new ArrayList<>(rawHistory);
+        // เรียงลำดับประวัติน้ำหนัก (จากเก่าไปใหม่)
+        if ("oldest".equals(sortHistory)) {
+            Collections.reverse(history);
+        }
+
         model.addAttribute("user", user);
-        model.addAttribute("weightHistory", getWeightHistory(session));
+        model.addAttribute("weightHistory", history);
+        model.addAttribute("sortHistory", sortHistory);
         return "person";
     }
 
@@ -239,7 +330,7 @@ public class HealthController {
         return "redirect:/person";
     }
 
-    private void populateFoodModel(HttpSession session, Model model) {
+    private void populateFoodModel(HttpSession session, Model model, String searchPreset) {
         List<String> breakfastItems = getMealItems(session, "breakfast");
         List<String> lunchItems = getMealItems(session, "lunch");
         List<String> dinnerItems = getMealItems(session, "dinner");
@@ -256,7 +347,18 @@ public class HealthController {
         model.addAttribute("lunch", lunch);
         model.addAttribute("dinner", dinner);
         model.addAttribute("totalEaten", totalEaten);
-        model.addAttribute("presetFoods", getPresetFoods());
+
+        // เพิ่มระบบค้นหาเมนูอาหารสำเร็จรูป
+        Map<String, Integer> presets = getPresetFoods();
+        if (searchPreset != null && !searchPreset.isBlank()) {
+            String query = searchPreset.toLowerCase();
+            presets = presets.entrySet().stream()
+                    .filter(e -> e.getKey().toLowerCase().contains(query))
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, 
+                            (v1, v2) -> v1, LinkedHashMap::new));
+        }
+        model.addAttribute("presetFoods", presets);
+        model.addAttribute("searchPreset", searchPreset);
     }
 
     private void addFoodToSession(HttpSession session, String meal, String foodName, int kcal) {
@@ -362,7 +464,9 @@ public class HealthController {
         if (username == null || username.isBlank()) return;
 
         Integer targetKcal = (Integer) session.getAttribute("targetKcal");
+        String password = (String) session.getAttribute("password");
         Double weight = (Double) session.getAttribute("userWeight");
+        Double goalWeight = (Double) session.getAttribute("goalWeight");
         Double height = (Double) session.getAttribute("userHeight");
         String bmiStatus = (String) session.getAttribute("userStatus");
         Integer points = (Integer) session.getAttribute("points");
@@ -381,7 +485,7 @@ public class HealthController {
             workouts.put(p.getKey(), isWorkoutClaimed(session, p.getKey()));
         });
 
-        Managercontroller.syncUser(username, targetKcal, weight, height, bmiStatus, points, totalEaten,
+        Managercontroller.syncUser(username, password, targetKcal, weight, goalWeight, height, bmiStatus, points, totalEaten,
                                    bTotal, lTotal, dTotal, bItems, lItems, dItems, history, workouts);
     }
 }
